@@ -2,122 +2,168 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import "../components"
 
-Page{
+Page {
     id: page
 
     property variant question
+    property variant userModel
 
     allowedOrientations: Orientation.All
 
-    SilicaFlickable{
+    SilicaFlickable {
         anchors.fill: parent
         contentHeight: column.height
 
-        Column{
+        Column {
             id: column
             anchors {
                 left: parent.left
                 right: parent.right
             }
 
-            PageHeader{
+            PageHeader {
                 title: question.title
             }
 
-            Column{
+            Column {
                 anchors {
                     left: parent.left
                     right: parent.right
-                    leftMargin: Theme.horizontalPageMargin
-                    rightMargin: Theme.horizontalPageMargin
                 }
 
                 Label {
                     text: question.body
-                    width: parent.width
                     color: Theme.primaryColor
                     wrapMode: Text.WordWrap
                     font.pixelSize: Theme.fontSizeSmall
+                    anchors {
+                        left: parent.left
+                        leftMargin: Theme.horizontalPageMargin
+                        right: parent.right
+                        rightMargin: Theme.paddingMedium
+                    }
                 }
 
-                Hr{
-                    width: parent.width
-                    paddingTop: Theme.horizontalPageMargin
-                }
+                Row {
+                    visible: !userModel
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    spacing: Theme.paddingSmall
+                    height: busyIndicator.height + 2 * Theme.paddingLarge
 
-                Repeater{
-                    model: ListModel{
-                        id: commentModel
+                    BusyIndicator {
+                        id: busyIndicator
+                        running: true
+                        size: BusyIndicatorSize.Small
+                        anchors.verticalCenter: parent.verticalCenter
                     }
 
-                    Rectangle{
-                        width: parent.width
-                        height: comment.height
-                        color: "transparent"
+                    Label {
+                        text: qsTr("Loading anwsers...")
+                        color: Theme.primaryColor
+                        font.pixelSize: Theme.fontSizeSmall
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
 
-                        Comment{
-                            id: comment
-                            dataModel: model
-                            width: parent.width
+                Column {
+                    width: parent.width
+                    visible: !!userModel
+
+                    Hr {
+                        width: parent.width
+                        paddingTop: Theme.horizontalPageMargin
+                    }
+
+                    UserInfo {
+                        dataModel: userModel
+                        anchors {
+                            left: parent.left
+                            leftMargin: Theme.horizontalPageMargin
+                            right: parent.right
+                            rightMargin: Theme.horizontalPageMargin
                         }
                     }
-                }
 
-                CommentButton{
-                    anchors.left: parent.left
-                    anchors.leftMargin: Theme.paddingLarge
-                    width: parent.width
-                }
-
-                Hr{
-                    width: parent.width
-                    paddingTop: Theme.paddingMedium
-                    paddingBottom: Theme.paddingMedium
-                }
-
-                Label{
-                    text: question.answer_count + " " + (qsTr("Answers"))
-                    color: Theme.primaryColor
-                    wrapMode: Text.WordWrap
-                    font.pixelSize: Theme.fontSizeSmall
-                    font.bold: true
-                }
-
-                Hr{
-                    width: parent.width
-                    paddingTop: Theme.paddingLarge
-                    paddingBottom: Theme.paddingMedium
-                }
-
-                Repeater{
-                    model: ListModel{
-                        id: answerModel
+                    Hr {
+                        width: parent.width
+                        paddingTop: Theme.horizontalPageMargin
                     }
 
-                    Rectangle{
-                        width: parent.width
-                        height: answer.height
-                        color: "transparent"
+                    Repeater {
+                        model: ListModel {
+                            id: commentModel
+                        }
 
-                        Answer{
-                            id: answer
-                            dataModel: model
+                        Rectangle {
                             width: parent.width
+                            height: comment.height
+                            color: "transparent"
+
+                            Comment {
+                                id: comment
+                                dataModel: model
+                                width: parent.width
+                            }
                         }
                     }
-                }
 
-                AnswerButton{
-                    width: parent.width
-                }
+                    CommentButton {
+                        anchors.left: parent.left
+                        anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
+                        anchors.right: parent.right
+                    }
 
-                Hr{
-                    width: parent.width
+                    Hr {
+                        width: parent.width
+                        paddingTop: Theme.paddingMedium
+                        paddingBottom: Theme.paddingMedium
+                    }
+
+                    Label {
+                        text: question.answer_count + " " + (qsTr("Answers"))
+                        color: Theme.primaryColor
+                        wrapMode: Text.WordWrap
+                        font.pixelSize: Theme.fontSizeSmall
+                        font.bold: true
+                        anchors.left: parent.left
+                        anchors.leftMargin: Theme.horizontalPageMargin
+                    }
+
+                    Hr {
+                        width: parent.width
+                        paddingTop: Theme.paddingLarge
+                    }
+
+                    Repeater {
+                        model: ListModel {
+                            id: answerModel
+                        }
+
+                        Rectangle {
+                            width: parent.width
+                            height: answer.height
+                            color: "transparent"
+
+                            Answer {
+                                id: answer
+                                dataModel: model
+                                width: parent.width
+                            }
+                        }
+                    }
+
+                    AnswerButton {
+                        width: parent.width
+                    }
+
+                    Hr {
+                        width: parent.width
+                    }
                 }
             }
         }
 
-        VerticalScrollDecorator{}
+        VerticalScrollDecorator {}
     }
 
     Component.onCompleted: {
@@ -131,6 +177,9 @@ Page{
                 for (var i=0; i<rs.answers.length; i++){
                     answerModel.append(rs.answers[i])
                 }
+            }
+            if (rs.user){
+                userModel = rs.user
             }
         })
 

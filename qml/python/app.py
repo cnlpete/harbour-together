@@ -1,4 +1,4 @@
-import sys
+import sys, traceback
 import urllib.request
 import threading
 import json
@@ -10,6 +10,7 @@ except ImportError:
     IS_MOBILE = False
 
 from bs4 import BeautifulSoup
+import markdown
 
 class Main:
     def __init__(self):
@@ -38,8 +39,7 @@ class Main:
         try:
             getattr(self, callback)(response.read().decode('utf-8'), params)
         except:
-            err = sys.exc_info()
-            self.log(err[0].__name__ + ': ' + str(err[1]))
+            self.log(traceback.format_exc())
 
     def log(self, msg):
         if IS_MOBILE:
@@ -95,6 +95,14 @@ class Main:
 
         data = {}
 
+        # Parse user info
+        data['user'] = {}
+        post_node = dom.select_one('div.post.question')
+        if post_node is not None:
+            user_node = post_node.find('div', class_='post-update-info-container')
+            if user_node is not None:
+                data['user'] = self.parse_user(user_node)
+
         # Parse question's comments
         data['comments'] = []
         comments_node = dom.find(id='comments-for-question-' + str(int(question.id)))
@@ -105,7 +113,11 @@ class Main:
         data['answers'] = []
         for answer_node in dom.select('div.post.answer'):
             item = {}
+
             item['id'] = answer_node['data-post-id']
+            answer_user_node = answer_node.find('div', class_='post-update-info-container')
+            if answer_user_node is not None:
+                item['user'] = self.parse_user(answer_user_node)
 
             answer_info_node = answer_node.find('div', class_='post-update-info-container')
             if answer_info_node is not None:
@@ -137,7 +149,7 @@ class Main:
 
         data = []
 
-        if (node is not None):
+        if node is not None:
             for comment_node in node.find_all('div', class_='comment'):
                 comment_body_node = comment_node.find('div', class_='comment-body')
                 if comment_body_node is not None:
@@ -146,14 +158,53 @@ class Main:
                     item['content'] = ''
                     for p in comment_body_node.find_all(recursive=False):
                         if p.name == 'a':
+                            item['author'] = p.get_text()
                             break
                         item['content'] += str(p)
-
-                    print(item['content'])
-                    item['author'] = comment_body_node.p.find_next_sibling('a').get_text()
 
                     data.append(item)
 
         return data
+
+    def parse_user(self, node):
+        """
+        Parse user info in question or answer html
+        """
+
+        data = {}
+
+        if node is not None:
+            node1 = node.find('div', class_='post-update-info')
+            if node1 is not None:
+                card_node = node1.find('div', class_='user-card')
+                if card_node is not None:
+                    avatar_node = card_node.find('img', class_='gravatar')
+                    if avatar_node is not None:
+                        data['avatar_url'] = 'http:' + avatar_node.get('src')
+
+                    info_node = card_node.find('div', class_='user-info')
+                    if info_node is not None:
+                        name_node = info_node.find('a', recursive=False)
+                        if name_node is not None:
+                            data['username'] = name_node.get_text()
+
+                        reputation_node = info_node.find('span', class_='reputation-score')
+                        if reputation_node is not None:
+                            data['reputation'] = reputation_node.get_text()
+
+                        for i in range(1, 4):
+                            badge = info_node.find('span', class_='badge' + str(i))
+                            if badge is not None:
+                                value = badge.find_next_sibling('span', class_='badgecount').get_text()
+                                data['badge' + str(i)] = value
+
+        return data
+
+    def convert_markdown(self, text):
+        """
+        Convert to Markdown
+        """
+
+        self.send('markdown.finished', markdown.markdown(text))
 
 main = Main()

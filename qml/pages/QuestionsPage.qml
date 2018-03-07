@@ -41,12 +41,12 @@ Page {
         id: listView
         anchors.fill: parent
 
-        model: ListModel{
+        model: ListModel {
             id: listModel
         }
 
-        PullDownMenu{
-            MenuItem{
+        PullDownMenu {
+            MenuItem {
                 text: qsTr("Refresh")
                 onClicked: {
                     listModel.clear()
@@ -63,7 +63,7 @@ Page {
             id: delegate
             height: titleLbl.height + authorLbl.height + Theme.horizontalPageMargin
 
-            Column{
+            Column {
                 anchors {
                     fill: parent
                     leftMargin: Theme.horizontalPageMargin
@@ -80,7 +80,7 @@ Page {
                     wrapMode: Text.WordWrap
                     font.pixelSize: Theme.fontSizeSmall
                 }
-                Rectangle{
+                Rectangle {
                     width: parent.width
                     height: authorLbl.height
                     color: "transparent"
@@ -113,7 +113,13 @@ Page {
                 }
             }
 
-            onClicked: pageStack.push(Qt.resolvedUrl("QuestionPage.qml"), {question: model})
+            onClicked: {
+                py.setHandler('markdown.finished', function(html){
+                    model.body = html
+                    pageStack.push(Qt.resolvedUrl("QuestionPage.qml"), {question: model})
+                })
+                py.call('app.main.convert_markdown', [model.body])
+            }
         }
 
         VerticalScrollDecorator {}

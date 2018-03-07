@@ -3,110 +3,119 @@ import Sailfish.Silica 1.0
 
 Rectangle {
     property variant dataModel
+    property variant userModel
 
-    height: container.height + Theme.paddingLarge
+    height: container.height
     color: "transparent"
 
-    Row{
+    Column {
         id: container
         width: parent.width
-        spacing: Theme.paddingMedium
 
-        Column{
-            width: Theme.iconSizeMedium
-            Image {
-                id: avatarImg
-                source: dataModel.avatar_url
-                width: parent.width
-                height: parent.width
-                visible: dataModel.avatar_url.length
-            }
-            IconButton{
-                id: upBtn
-                icon.source: "image://theme/icon-m-up"
-                width: parent.width
-                visible: false
-            }
-            Label{
-                id: voteLbl
-                text: "38"
-                color: Theme.primaryColor
-                font.pixelSize: Theme.fontSizeSmall
-                font.bold: true
-                width: parent.width
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                visible: false
-            }
-            IconButton{
-                id: downBtn
-                icon.source: "image://theme/icon-m-down"
-                width: parent.width
-                visible: false
-            }
+        UserInfo {
+            dataModel: userModel
+            anchors.left: parent.left
+            anchors.leftMargin: Theme.horizontalPageMargin
+            anchors.right: parent.right
+            anchors.rightMargin: Theme.horizontalPageMargin
         }
 
-        Column{
-            width: parent.width - Theme.iconSizeMedium - Theme.paddingMedium
+        Row {
+            width: parent.width
 
-            Label{
-                id: author
-                text: "Damien Caliste"
-                color: Theme.primaryColor
-                font.pixelSize: Theme.fontSizeSmall
-                font.bold: true
-                visible: false
-            }
-            Label{
-                id: text
-                text: dataModel.content
-                textFormat: Text.RichText
-                color: Theme.primaryColor
-                wrapMode: Text.WordWrap
-                font.pixelSize: Theme.fontSizeSmall
-                width: parent.width
-            }
+            Column {
+                id: leftCol
+                width: Theme.horizontalPageMargin + Theme.itemSizeSmall
+                height: 1
 
-            Hr{
-                width: parent.width
-                paddingTop: Theme.paddingMedium
-                paddingBottom: Theme.paddingMedium
-            }
-
-            Repeater{
-                model: ListModel{
-                    id: commentModel
-                }
-
-                Rectangle{
+                IconButton {
+                    id: upBtn
+                    icon.source: "image://theme/icon-m-up"
                     width: parent.width
-                    height: comment.height
-                    color: "transparent"
+                    visible: false
+                }
 
-                    Comment{
-                        id: comment
-                        dataModel: model
-                        width: parent.width
-                    }
+                Label {
+                    id: voteLbl
+                    text: "38"
+                    color: Theme.primaryColor
+                    font.pixelSize: Theme.fontSizeSmall
+                    font.bold: true
+                    width: parent.width
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    visible: false
+                }
+
+                IconButton {
+                    id: downBtn
+                    icon.source: "image://theme/icon-m-down"
+                    width: parent.width
+                    visible: false
                 }
             }
 
-            CommentButton{
-                width: parent.width
+            Column {
+                id: rightCol
+                width: parent.width - leftCol.width - Theme.paddingMedium
+
+                Label {
+                    id: text
+                    text: dataModel.content
+                    textFormat: Text.RichText
+                    color: Theme.primaryColor
+                    wrapMode: Text.WordWrap
+                    font.pixelSize: Theme.fontSizeSmall
+                    width: parent.width
+                }
             }
         }
-    }
 
-    Hr{
-        anchors.top: container.bottom
-        anchors.topMargin: Theme.paddingMedium
-        width: parent.width
+        Hr {
+            width: parent.width
+            paddingTop: Theme.paddingMedium
+            paddingBottom: Theme.paddingMedium
+        }
+
+        Repeater {
+            model: ListModel {
+                id: commentModel
+            }
+
+            Rectangle {
+                width: parent.width
+                height: comment.height
+                color: "transparent"
+
+                Comment {
+                    id: comment
+                    dataModel: model
+                    width: parent.width
+                }
+            }
+        }
+
+        CommentButton {
+            anchors.left: parent.left
+            anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
+            anchors.right: parent.right
+        }
+
+        Hr {
+            width: parent.width
+            paddingTop: Theme.paddingMedium
+        }
     }
 
     Component.onCompleted: {
-        if (dataModel && dataModel.comments){
-            for (var i=0; i<dataModel.comments.count; i++){
-                commentModel.append(dataModel.comments.get(i))
+        if (dataModel){
+            if (dataModel.comments){
+                for (var i=0; i<dataModel.comments.count; i++){
+                    commentModel.append(dataModel.comments.get(i))
+                }
+            }
+            if (dataModel.user){
+                userModel = dataModel.user
             }
         }
     }
