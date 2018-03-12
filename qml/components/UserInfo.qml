@@ -15,49 +15,93 @@ Rectangle {
         height: avatar.height + 2 * Theme.paddingMedium
         spacing: Theme.paddingMedium
 
-        Image {
+        Rectangle {
             id: avatar
-            source: dataModel ? dataModel.avatar_url : ""
-            visible: !!dataModel && !!dataModel.avatar_url
             width: Theme.itemSizeSmall
             height: Theme.itemSizeSmall
             anchors.verticalCenter: parent.verticalCenter
-        }
+            color: "transparent"
 
-        Column{
-            spacing: Theme.paddingSmall
-            anchors.verticalCenter: parent.verticalCenter
-
-            Label{
-                id: author
-                text: dataModel ? dataModel.username : ""
-                color: Theme.primaryColor
-                font.pixelSize: Theme.fontSizeExtraSmall
+            Image {
+                id: avatarImg
+                source: dataModel && dataModel.avatar_url ? dataModel.avatar_url : ""
+                visible: !!dataModel && !!dataModel.avatar_url
+                anchors.fill: parent
             }
 
-            Label{
-                id: badges
-                text: {
-                    if (!dataModel) return ""
+            Rectangle {
+                id: avatarPlaceholder
+                anchors.fill: parent
+                color: "black"
+                opacity: 0.4
+                visible: !avatarImg.visible
+            }
+        }
 
-                    var str = []
+        Row {
+            width: parent.width - avatar.width - parent.spacing
 
-                    str.push(dataModel.reputation)
-                    if (dataModel.badge1){
-                        str.push("<span style=\"color:gold\">●</span> " + dataModel.badge1)
-                    }
-                    if (dataModel.badge2){
-                        str.push("<span style=\"color:silver\">●</span> " + dataModel.badge2)
-                    }
-                    if (dataModel.badge3){
-                        str.push("<span style=\"color:saddlebrown \">●</span> " + dataModel.badge3)
-                    }
+            Column {
+                id: leftCol
+                spacing: Theme.paddingSmall
+                anchors.verticalCenter: parent.verticalCenter
 
-                    return str.join(" ")
+                Label {
+                    id: authorLbl
+                    text: dataModel ? dataModel.username : ""
+                    color: Theme.primaryColor
+                    font.pixelSize: Theme.fontSizeSmall
                 }
-                textFormat: Text.RichText
-                color: Theme.primaryColor
-                font.pixelSize: Theme.fontSizeExtraSmall
+
+                Label{
+                    id: badgesLbl
+                    text: {
+                        if (!dataModel) return ""
+
+                        var str = []
+
+                        str.push(dataModel.reputation)
+                        if (dataModel.badge1){
+                            str.push("<span style=\"color:gold\">●</span> " + dataModel.badge1)
+                        }
+                        if (dataModel.badge2){
+                            str.push("<span style=\"color:silver\">●</span> " + dataModel.badge2)
+                        }
+                        if (dataModel.badge3){
+                            str.push("<span style=\"color:saddlebrown \">●</span> " + dataModel.badge3)
+                        }
+
+                        return str.join(" ")
+                    }
+                    textFormat: Text.RichText
+                    color: Theme.primaryColor
+                    font.pixelSize: Theme.fontSizeExtraSmall
+                }
+            }
+
+            Column {
+                id: rightCol
+                spacing: Theme.paddingSmall
+                anchors.verticalCenter: parent.verticalCenter
+                width: parent.width - leftCol.width
+
+                Label {
+                    id: isAuthorLbl
+                    text: dataModel && dataModel.is_author ? qsTr("asked") : qsTr("answered")
+                    color: Theme.secondaryColor
+                    font.pixelSize: Theme.fontSizeSmall
+                    width: parent.width
+                    horizontalAlignment: Text.AlignRight
+                }
+
+                Label {
+                    id: dateLbl
+                    text: dataModel && dataModel.date_ago ? dataModel.date_ago : ""
+                    color: Theme.secondaryColor
+                    font.pixelSize: Theme.fontSizeExtraSmall
+                    width: parent.width
+                    horizontalAlignment: Text.AlignRight
+                }
             }
         }
     }

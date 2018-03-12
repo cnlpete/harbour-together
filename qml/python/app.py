@@ -11,6 +11,7 @@ except ImportError:
 
 from bs4 import BeautifulSoup
 import markdown
+import timeago
 
 class Main:
     def __init__(self):
@@ -75,6 +76,7 @@ class Main:
             item['id'] = q['id']
             item['title'] = q['title']
             item['body'] = q['text']
+            item['author_id'] = q['author']['id']
             item['author'] = q['author']['username']
             item['score'] = q['score']
             item['answer_count'] = q['answer_count']
@@ -102,6 +104,8 @@ class Main:
             user_node = post_node.find('div', class_='post-update-info-container')
             if user_node is not None:
                 data['user'] = self.parse_user(user_node)
+                data['user']['username'] = question.author
+                data['user']['is_author'] = True
 
         # Parse question's comments
         data['comments'] = []
@@ -176,6 +180,11 @@ class Main:
         if node is not None:
             node1 = node.find('div', class_='post-update-info')
             if node1 is not None:
+                date_node = node1.find('abbr', class_='timeago')
+                if date_node is not None:
+                    data['date'] = date_node.get('title')
+                    data['date_ago'] = timeago.format(self.parse_date(data['date']))
+
                 card_node = node1.find('div', class_='user-card')
                 if card_node is not None:
                     avatar_node = card_node.find('img', class_='gravatar')
@@ -200,9 +209,17 @@ class Main:
 
         return data
 
+    def parse_date(self, date):
+        """
+        Return datetime format supportted by "timeago" lib, strip timezone data
+        Ex: 2018-03-09 09:45:54 +0200 => 2018-03-09 09:45:54
+        """
+
+        return ' '.join(date.split(' ')[:-1])
+
     def convert_markdown(self, text):
         """
-        Convert to Markdown
+        Convert Markdown format to HTML
         """
 
         self.send('markdown.finished', markdown.markdown(text))

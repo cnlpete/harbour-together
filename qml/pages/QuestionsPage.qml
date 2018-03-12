@@ -50,7 +50,7 @@ Page {
                 text: qsTr("Refresh")
                 onClicked: {
                     listModel.clear()
-                    py.call('app.app.get_questions')
+                    py.call('app.main.get_questions')
                 }
             }
         }
