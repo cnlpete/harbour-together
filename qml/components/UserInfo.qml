@@ -48,7 +48,7 @@ Rectangle {
 
                 Label {
                     id: authorLbl
-                    text: dataModel ? dataModel.username : ""
+                    text: dataModel && dataModel.username ? dataModel.username : ""
                     color: Theme.primaryColor
                     font.pixelSize: Theme.fontSizeSmall
                 }

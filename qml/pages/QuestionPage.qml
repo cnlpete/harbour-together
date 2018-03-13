@@ -164,6 +164,19 @@ Page {
         }
 
         VerticalScrollDecorator {}
+
+        PushUpMenu {
+            id: pushUpMenu
+            visible: false
+
+            MenuItem {
+                text: qsTr("Load more")
+                onClicked: {
+                    question.page += 1
+                    py.call("app.main.get_question", [question])
+                }
+            }
+        }
     }
 
     Component.onCompleted: {
@@ -180,6 +193,11 @@ Page {
             }
             if (rs.user){
                 userModel = rs.user
+            }
+            if (rs.has_pages){
+                pushUpMenu.visible = true
+            }else{
+                pushUpMenu.visible = false
             }
         })
 

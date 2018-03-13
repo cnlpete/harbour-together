@@ -81,12 +81,14 @@ class Main:
             item['score'] = q['score']
             item['answer_count'] = q['answer_count']
             item['url'] = q['url']
+            item['page'] = 1
             questions.append(item)
 
         self.send('questions.finished', questions)
 
     def get_question(self, question):
-        self.request('get', question.url, '_parse_question', question)
+        url = self.build_url(question)
+        self.request('get', url, '_parse_question', question)
 
     def _parse_question(self, text, question):
         """
@@ -97,54 +99,88 @@ class Main:
 
         data = {}
 
-        # Parse user info
-        data['user'] = {}
-        post_node = dom.select_one('div.post.question')
-        if post_node is not None:
-            user_node = post_node.find('div', class_='post-update-info-container')
-            if user_node is not None:
-                data['user'] = self.parse_user(user_node)
-                data['user']['username'] = question.author
-                data['user']['is_author'] = True
+        # If requested page is not first page, it mean we only need load more answers
+        if question.page == 1:
+            # Parse user info
+            data['user'] = {}
+            post_node = dom.select_one('div.post.question')
+            if post_node is not None:
+                user_node = post_node.find('div', class_='post-update-info-container')
+                if user_node is not None:
+                    data['user'] = self.parse_user(user_node)
+                    data['user']['username'] = question.author
+                    data['user']['is_author'] = True
 
-        # Parse question's comments
-        data['comments'] = []
-        comments_node = dom.find(id='comments-for-question-' + str(int(question.id)))
-        if comments_node is not None:
-            data['comments'] = self.parse_comment(comments_node)
+            # Parse question's comments
+            data['comments'] = []
+            comments_node = dom.find(id='comments-for-question-' + str(int(question.id)))
+            if comments_node is not None:
+                data['comments'] = self.parse_comment(comments_node)
+
+        # Parse question paging
+        data['has_pages'] = 0
+        paging_node = dom.find('div', class_='paginator')
+        if paging_node is not None:
+            current_page_node = paging_node.find('span', class_='curr')
+            if current_page_node is not None:
+                data['page'] = current_page_node.get_text().strip()
+            else:
+                data['page'] = 1
+
+            next_page_node = paging_node.find('span', class_='next')
+            if next_page_node is not None:
+                data['has_pages'] = 1
 
         # Parse question's answers
-        data['answers'] = []
-        for answer_node in dom.select('div.post.answer'):
-            item = {}
-
-            item['id'] = answer_node['data-post-id']
-            answer_user_node = answer_node.find('div', class_='post-update-info-container')
-            if answer_user_node is not None:
-                item['user'] = self.parse_user(answer_user_node)
-
-            answer_info_node = answer_node.find('div', class_='post-update-info-container')
-            if answer_info_node is not None:
-                item['content'] = ''
-                for p in answer_info_node.find_next_siblings():
-                    style = ''
-                    if p.name == 'pre':
-                        style += 'white-space:normal;'
-                    p['style'] = style
-                    item['content'] += str(p)
-
-                answer_avatar_node = answer_info_node.find('img', class_='gravatar')
-                if answer_avatar_node is not None:
-                    item['avatar_url'] = 'http:' + answer_avatar_node.get('src')
-
-            # Parse answer's comments
-            answer_comments_node = answer_node.find('div', class_='comments')
-            if answer_comments_node is not None:
-                item['comments'] = self.parse_comment(answer_comments_node)
-
-            data['answers'].append(item)
+        data['answers'] = self.parse_answer(dom)
 
         self.send('question.finished', data)
+
+    def build_url(self, question):
+        """
+        Build url for question page, including paging, sort
+        """
+
+        url = question.url
+
+        url += '?page=' + str(int(question.page))
+
+        return url
+
+    def parse_answer(self, node):
+        data = []
+
+        if node is not None:
+            for answer_node in node.select('div.post.answer'):
+                item = {}
+
+                item['id'] = answer_node['data-post-id']
+                answer_user_node = answer_node.find('div', class_='post-update-info-container')
+                if answer_user_node is not None:
+                    item['user'] = self.parse_user(answer_user_node)
+
+                answer_info_node = answer_node.find('div', class_='post-update-info-container')
+                if answer_info_node is not None:
+                    item['content'] = ''
+                    for p in answer_info_node.find_next_siblings():
+                        style = ''
+                        if p.name == 'pre':
+                            style += 'white-space:normal;'
+                        p['style'] = style
+                        item['content'] += str(p)
+
+                    answer_avatar_node = answer_info_node.find('img', class_='gravatar')
+                    if answer_avatar_node is not None:
+                        item['avatar_url'] = 'http:' + answer_avatar_node.get('src')
+
+                # Parse answer's comments
+                answer_comments_node = answer_node.find('div', class_='comments')
+                if answer_comments_node is not None:
+                    item['comments'] = self.parse_comment(answer_comments_node)
+
+                data.append(item)
+
+        return data
 
     def parse_comment(self, node):
         """
@@ -164,7 +200,7 @@ class Main:
                         if p.name == 'a':
                             item['author'] = p.get_text()
                             break
-                        item['content'] += str(p)
+                        item['content'] += str(p).strip()
 
                     data.append(item)
 
