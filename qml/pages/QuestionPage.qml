@@ -3,8 +3,6 @@ import Sailfish.Silica 1.0
 import "../components"
 
 Page {
-    id: page
-
     property variant question
     property variant userModel
 
@@ -16,6 +14,7 @@ Page {
 
         Column {
             id: column
+
             anchors {
                 left: parent.left
                 right: parent.right

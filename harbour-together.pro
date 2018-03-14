@@ -14,7 +14,11 @@ TARGET = harbour-together
 
 CONFIG += sailfishapp
 
-SOURCES += src/harbour-together.cpp
+HEADERS += \
+    src/settings.h
+
+SOURCES += src/harbour-together.cpp \
+    src/settings.cpp
 
 DISTFILES += qml/*.qml \
     rpm/harbour-together.spec \
