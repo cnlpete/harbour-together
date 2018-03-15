@@ -56,9 +56,12 @@ class Main:
         if IS_MOBILE:
             pyotherside.send(event, data)
 
-    def get_questions(self):
+    def get_questions(self, params={}):
         url = self.base_url + 'api/v1/questions/'
-        self.request('get', url, '_parse_questions')
+        if params:
+            url += '?' + urllib.parse.urlencode(params)
+
+        self.request('get', url, '_parse_questions', params)
 
     def _parse_questions(self, text, params):
         """
@@ -70,7 +73,9 @@ class Main:
         except ValueError as e:
             return self.log('JSONError: Value is not JSON')
 
-        questions = []
+        out = {}
+
+        out['questions'] = []
         for q in data['questions']:
             item = {}
             item['id'] = q['id']
@@ -82,9 +87,9 @@ class Main:
             item['answer_count'] = q['answer_count']
             item['url'] = q['url']
             item['page'] = 1
-            questions.append(item)
+            out['questions'].append(item)
 
-        self.send('questions.finished', questions)
+        self.send('questions.finished', out)
 
     def get_question(self, question):
         url = self.build_url(question)

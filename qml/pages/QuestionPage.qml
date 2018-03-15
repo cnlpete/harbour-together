@@ -57,7 +57,7 @@ Page {
                     }
 
                     Label {
-                        text: qsTr("Loading anwsers...")
+                        text: qsTr("Loading anwsers") + "..."
                         color: Theme.primaryColor
                         font.pixelSize: Theme.fontSizeSmall
                         anchors.verticalCenter: parent.verticalCenter

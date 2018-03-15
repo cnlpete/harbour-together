@@ -12,7 +12,6 @@ ApplicationWindow
 
     Settings {
         id: settings
-        Component.onCompleted: console.log(settings.order)
     }
 
     Python {

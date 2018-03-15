@@ -1,8 +1,11 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import lbee.together.core 1.0
+import "../components"
 
 Page {
+    property int currentPage: 1
+
     allowedOrientations: Orientation.All
 
     SilicaListView {
@@ -15,9 +18,7 @@ Page {
         }
 
         PullDownMenu {
-            MenuItem {
-                text: qsTr("About")
-            }
+            id: pullDownMenu
 
             MenuItem {
                 text: {
@@ -47,8 +48,8 @@ Page {
             MenuItem {
                 text: qsTr("Refresh")
                 onClicked: {
-                    listModel.clear()
-                    py.call('app.main.get_questions')
+                    currentPage = 1
+                    refresh()
                 }
             }
         }
@@ -57,61 +58,7 @@ Page {
             title: qsTr("Questions")
         }
 
-        delegate: BackgroundItem {
-            id: delegate
-            height: titleLbl.height + authorLbl.height + Theme.horizontalPageMargin
-
-            Column {
-                anchors {
-                    fill: parent
-                    leftMargin: Theme.horizontalPageMargin
-                    rightMargin: Theme.horizontalPageMargin
-                    topMargin: Theme.horizontalPageMargin / 2
-                    bottomMargin: Theme.horizontalPageMargin / 2
-                }
-
-                Label {
-                    id: titleLbl
-                    text: title
-                    width: parent.width
-                    color: delegate.highlighted ? Theme.highlightColor : Theme.primaryColor
-                    wrapMode: Text.WordWrap
-                    font.pixelSize: Theme.fontSizeSmall
-                }
-
-                Rectangle {
-                    width: parent.width
-                    height: authorLbl.height
-                    color: "transparent"
-
-                    Label {
-                        id: authorLbl
-                        text: qsTr("by") + " " + author
-                        anchors.left: parent.left
-                        color: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: Theme.fontSizeExtraSmall
-                    }
-                    Label {
-                        id: voteLbl
-                        text: score + " " + (score > 1 ? qsTr("votes") : qsTr("vote"))
-                        anchors.right: answerLbl.left
-                        anchors.rightMargin: Theme.horizontalPageMargin
-                        color: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: Theme.fontSizeExtraSmall
-                    }
-                    Label {
-                        id: answerLbl
-                        text: answer_count + " " + (answer_count > 1 ? qsTr("answers") : qsTr("answer"))
-                        anchors.right: parent.right
-                        color: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: Theme.fontSizeExtraSmall
-                    }
-                }
-            }
-
+        delegate: QuestionDelegate {
             onClicked: {
                 py.setHandler('markdown.finished', function(html){
                     model.body = html
@@ -122,6 +69,20 @@ Page {
         }
 
         VerticalScrollDecorator {}
+
+        PushUpMenu {
+            id: pushUpMenu
+            visible: false
+
+            MenuItem {
+                text: qsTr("Load more")
+                onClicked: {
+                    currentPage++
+                    pushUpMenu.busy = true
+                    refresh(true)
+                }
+            }
+        }
     }
 
     BusyIndicator {
@@ -135,11 +96,41 @@ Page {
 
     Component.onCompleted: {
         py.setHandler('questions.finished', function(rs){
-            for (var i=0; i<rs.length; i++){
-                listModel.append(rs[i])
+            pullDownMenu.busy = false
+            pushUpMenu.busy = false
+
+            if (rs.questions){
+                pushUpMenu.visible = true
+
+                for (var i=0; i<rs.questions.length; i++){
+                    listModel.append(rs.questions[i])
+                }
             }
         })
 
-        py.call('app.main.get_questions')
+        refresh()
+    }
+
+    Connections {
+        target: settings
+        onOrderChanged: refresh()
+    }
+
+    function refresh(next){
+        var order, dir;
+
+        switch (settings.order){
+        case Settings.Date: order = "age"; dir = "desc"; break;
+        case Settings.Activity: order = "activity"; dir = "asc"; break;
+        case Settings.Answers: order = "answers"; dir = "desc"; break;
+        case Settings.Votes: order = "votes"; dir = "desc"; break;
+        }
+
+        if (!next) listModel.clear()
+
+        pullDownMenu.busy = true
+        pushUpMenu.busy = true
+
+        py.call('app.main.get_questions', [{sort: order + '-' + dir, page: currentPage}])
     }
 }
