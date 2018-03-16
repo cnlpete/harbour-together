@@ -8,14 +8,15 @@ Rectangle {
     color: "transparent"
     visible: dataModel.content.length
 
-    Column{
+    Column {
         id: col
         width: parent.width
 
-        Label{
+        Label {
             id: content
             text: dataModel.content
             color: Theme.secondaryColor
+            linkColor: Theme.highlightColor
             font.pixelSize: Theme.fontSizeExtraSmall
             wrapMode: Text.WordWrap
             anchors.left: parent.left
@@ -24,14 +25,14 @@ Rectangle {
             anchors.rightMargin: Theme.paddingMedium
         }
 
-        Label{
+        Label {
             text: dataModel.author
             color: Theme.primaryColor
             font.pixelSize: Theme.fontSizeExtraSmall
             anchors.left: content.left
         }
 
-        Hr{
+        Hr {
             width: parent.width
             opacity: 0.4
             paddingTop: Theme.paddingMedium

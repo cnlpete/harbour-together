@@ -62,8 +62,9 @@ Rectangle {
                 Label {
                     id: text
                     text: dataModel.content
-                    textFormat: Text.RichText
+                    //textFormat: Text.RichText
                     color: Theme.primaryColor
+                    linkColor: Theme.highlightColor
                     wrapMode: Text.WordWrap
                     font.pixelSize: Theme.fontSizeSmall
                     width: parent.width

@@ -35,6 +35,8 @@ Page {
                     color: Theme.primaryColor
                     wrapMode: Text.WordWrap
                     font.pixelSize: Theme.fontSizeSmall
+                    textFormat: Text.StyledText
+                    linkColor: Theme.highlightColor
                     anchors {
                         left: parent.left
                         leftMargin: Theme.horizontalPageMargin
