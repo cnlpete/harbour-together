@@ -21,6 +21,7 @@ class Main:
 
     def request(self, method, url, callback, params={}):
         if self.network_thread.is_alive():
+            self.log('Network busy.')
             return
 
         self.network_thread = threading.Thread(
@@ -31,16 +32,20 @@ class Main:
     def _request(self, method, url, callback, params={}):
         self.log(method.upper() + ' ' + url)
 
-        try:
-            response = urllib.request.urlopen(url)
-            self.log(response.getcode())
-        except urllib.error.URLError as e:
-            return self.log('URLError: ' + str(e.reason))
+        response = urllib.request.urlopen(url)
+        self.log(response.getcode())
 
         try:
             getattr(self, callback)(response.read().decode('utf-8'), params)
         except:
             self.log(traceback.format_exc())
+            raise Exception('CONTENT_ERROR')
+
+    def err(self, msg):
+        if IS_MOBILE:
+            self.send('error', msg)
+        else:
+            print(msg)
 
     def log(self, msg):
         if IS_MOBILE:
@@ -48,7 +53,7 @@ class Main:
         else:
             print(msg)
 
-    def send(self, event, data):
+    def send(self, event, data=None):
         """
         Send data to QML objects
         """
@@ -61,7 +66,11 @@ class Main:
         if params:
             url += '?' + urllib.parse.urlencode(params)
 
-        self.request('get', url, '_parse_questions', params)
+        try:
+            self._request('get', url, '_parse_questions', params)
+        except Exception as e:
+            self.send('questions.error')
+            self.err(str(e.reason))
 
     def _parse_questions(self, text, params):
         """
@@ -93,7 +102,12 @@ class Main:
 
     def get_question(self, question):
         url = self.build_url(question)
-        self.request('get', url, '_parse_question', question)
+
+        try:
+            self._request('get', url, '_parse_question', question)
+        except Exception as e:
+            self.send('question.error')
+            self.err(str(e.reason))
 
     def _parse_question(self, text, question):
         """

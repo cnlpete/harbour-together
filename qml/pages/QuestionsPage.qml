@@ -86,8 +86,8 @@ Page {
     }
 
     BusyIndicator {
-        id: busy
-        visible: !listModel.count
+        id: loader
+        visible: false
         running: true
         size: BusyIndicatorSize.Large
         anchors.verticalCenter: parent.verticalCenter
@@ -98,6 +98,7 @@ Page {
         py.setHandler('questions.finished', function(rs){
             pullDownMenu.busy = false
             pushUpMenu.busy = false
+            loader.visible = false
 
             if (rs.questions){
                 pushUpMenu.visible = true
@@ -106,6 +107,12 @@ Page {
                     listModel.append(rs.questions[i])
                 }
             }
+        })
+
+        py.setHandler('questions.error', function(){
+            loader.visible = false
+            pullDownMenu.busy = false
+            pushUpMenu.busy = false
         })
 
         refresh()
@@ -121,12 +128,15 @@ Page {
 
         switch (settings.order){
         case Settings.Date: order = "age"; dir = "desc"; break;
-        case Settings.Activity: order = "activity"; dir = "asc"; break;
+        case Settings.Activity: order = "activity"; dir = "desc"; break;
         case Settings.Answers: order = "answers"; dir = "desc"; break;
         case Settings.Votes: order = "votes"; dir = "desc"; break;
         }
 
-        if (!next) listModel.clear()
+        if (!next){
+            listModel.clear()
+            loader.visible = true
+        }
 
         pullDownMenu.busy = true
         pushUpMenu.busy = true

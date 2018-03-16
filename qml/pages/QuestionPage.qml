@@ -49,6 +49,14 @@ Page {
                     spacing: Theme.paddingSmall
                     height: busyIndicator.height + 2 * Theme.paddingLarge
 
+                    Image {
+                        visible: !busyIndicator.visible
+                        source: "image://theme/icon-s-high-importance"
+                        width: Theme.iconSizeSmall
+                        height: Theme.iconSizeSmall
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
                     BusyIndicator {
                         id: busyIndicator
                         running: true
@@ -57,7 +65,7 @@ Page {
                     }
 
                     Label {
-                        text: qsTr("Loading anwsers") + "..."
+                        text: busyIndicator.visible ? qsTr("Loading anwsers") + "..." : qsTr("Failed")
                         color: Theme.primaryColor
                         font.pixelSize: Theme.fontSizeSmall
                         anchors.verticalCenter: parent.verticalCenter
@@ -198,6 +206,10 @@ Page {
             }else{
                 pushUpMenu.visible = false
             }
+        })
+
+        py.setHandler('question.error', function(){
+            busyIndicator.visible = false
         })
 
         py.call('app.main.get_question', [question])
