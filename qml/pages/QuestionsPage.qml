@@ -4,7 +4,15 @@ import lbee.together.core 1.0
 import "../components"
 
 Page {
-    property int currentPage: 1
+    id: root
+
+    property int p: 1
+    property string scope: "all"
+    property string order: getSetting('order')
+    property string direction: "desc"
+    property string query: ""
+    property string tags: ""
+    property bool searchMode: false
 
     allowedOrientations: Orientation.All
 
@@ -46,16 +54,51 @@ Page {
             }
 
             MenuItem {
+                text: searchMode ? qsTr("Hide search") : qsTr("Search")
+                onClicked: {
+                    searchMode = !searchMode
+                    listView.headerItem._titleItem.visible = !searchMode
+                    listView.headerItem.searchField.visible = searchMode
+                    if (searchMode == false){
+                        if (query != ""){
+                            query = ""
+                            p = 1
+                            refresh()
+                        }
+                    }else{
+                        listView.headerItem.searchField.forceActiveFocus()
+                    }
+                }
+            }
+
+            MenuItem {
                 text: qsTr("Refresh")
                 onClicked: {
-                    currentPage = 1
+                    p = 1
                     refresh()
                 }
             }
         }
 
         header: PageHeader {
+            property alias searchField: searchField
+
             title: qsTr("Questions")
+
+            SearchField {
+                id: searchField
+                visible: false
+                width: parent.width
+                placeholderText: "Search"
+
+                EnterKey.enabled: searchField.text.length > 0
+                EnterKey.onClicked: {
+                    searchField.focus = false
+                    query = searchField.text
+                    p = 1
+                    refresh()
+                }
+            }
         }
 
         delegate: QuestionDelegate {
@@ -64,7 +107,7 @@ Page {
                     model.body = html
                     pageStack.push(Qt.resolvedUrl("QuestionPage.qml"), {question: model})
                 })
-                py.call('app.main.convert_markdown', [model.body])
+                py.call('app.main.markdown', [model.body])
             }
         }
 
@@ -77,7 +120,7 @@ Page {
             MenuItem {
                 text: qsTr("Load more")
                 onClicked: {
-                    currentPage++
+                    p++
                     pushUpMenu.busy = true
                     refresh(true)
                 }
@@ -120,27 +163,49 @@ Page {
 
     Connections {
         target: settings
-        onOrderChanged: refresh()
+        onOrderChanged: {
+            order = getSetting('order')
+            p = 1
+            refresh()
+        }
     }
 
-    function refresh(next){
-        var order, dir;
+    function getSetting(name){
+        var value
 
-        switch (settings.order){
-        case Settings.Date: order = "age"; dir = "desc"; break;
-        case Settings.Activity: order = "activity"; dir = "desc"; break;
-        case Settings.Answers: order = "answers"; dir = "desc"; break;
-        case Settings.Votes: order = "votes"; dir = "desc"; break;
+        switch (name){
+        case 'order':
+            switch (settings.order){
+            case Settings.Date: value = "age"; break;
+            case Settings.Answers: value = "answers"; break;
+            case Settings.Votes: value = "votes"; break;
+            case Settings.Activity:
+            default: value = "activity";
+            }
         }
 
-        if (!next){
+        return value
+    }
+
+    function refresh(){
+        if (p == 1){
             listModel.clear()
             loader.visible = true
         }
 
         pullDownMenu.busy = true
-        pushUpMenu.busy = true
+        if (p > 1){
+            pushUpMenu.busy = true
+        }else{
+            pushUpMenu.visible = false
+        }
 
-        py.call('app.main.get_questions', [{sort: order + '-' + dir, page: currentPage}])
+        py.call('app.main.get_questions', [{
+                                               scope: scope,
+                                               sort: order + '-' + direction,
+                                               tags: tags,
+                                               query: query,
+                                               page: p
+                                           }])
     }
 }

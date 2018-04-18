@@ -15,6 +15,7 @@ BackgroundItem {
         }
 
         Label {
+            // Question title
             id: titleLbl
             text: title
             width: parent.width
@@ -24,11 +25,13 @@ BackgroundItem {
         }
 
         Rectangle {
+            // Question metadata
             width: parent.width
             height: authorLbl.height
             color: "transparent"
 
             Label {
+                // Author
                 id: authorLbl
                 text: qsTr("by") + " " + author
                 anchors.left: parent.left
@@ -38,45 +41,75 @@ BackgroundItem {
             }
 
             Row {
-                id: voteLbl
-                anchors.right: answerLbl.left
-                anchors.rightMargin: Theme.horizontalPageMargin
+                anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: Theme.paddingSmall
 
-                Image {
-                    source: "image://theme/icon-s-like"
+                Text {
+                    // Vote icon
+                    font.pixelSize: Theme.fontSizeExtraSmall
+                    font.family: iconFont.name
+                    text: "\uf164"
                     anchors.verticalCenter: parent.verticalCenter
-                    width: Theme.iconSizeSmall
-                    height: Theme.iconSizeSmall
-                    opacity: 0.4
+                    opacity: 0.5
+                    color: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
                 }
 
                 Label {
-                    text: score
+                    // Vote count
+                    text: score_label
                     color: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
                     wrapMode: Text.WordWrap
                     font.pixelSize: Theme.fontSizeExtraSmall
                     anchors.verticalCenter: parent.verticalCenter
                 }
-            }
 
-            Row {
-                id: answerLbl
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: Theme.paddingSmall
+                Rectangle {
+                    // Separator
+                    color: "transparent"
+                    width: Theme.paddingSmall
+                    height: 1
+                }
 
-                Image {
-                    source: "image://theme/icon-s-chat"
+                Text {
+                    // Answer icon
+                    font.pixelSize: Theme.fontSizeExtraSmall
+                    font.family: iconFont.name
+                    text: "\uf086"
                     anchors.verticalCenter: parent.verticalCenter
-                    width: Theme.iconSizeSmall
-                    height: Theme.iconSizeSmall
-                    opacity: 0.4
+                    opacity: 0.5
+                    color: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
                 }
 
                 Label {
-                    text: answer_count
+                    // Answer count
+                    text: answer_count_label
+                    color: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
+                    wrapMode: Text.WordWrap
+                    font.pixelSize: Theme.fontSizeExtraSmall
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                Rectangle {
+                    // Separator
+                    color: "transparent"
+                    width: Theme.paddingSmall
+                    height: 1
+                }
+
+                Text {
+                    // View icon
+                    font.pixelSize: Theme.fontSizeExtraSmall
+                    font.family: iconFont.name
+                    text: "\uf06e"
+                    anchors.verticalCenter: parent.verticalCenter
+                    opacity: 0.5
+                    color: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
+                }
+
+                Label {
+                    // View count
+                    text: view_count_label
                     color: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
                     wrapMode: Text.WordWrap
                     font.pixelSize: Theme.fontSizeExtraSmall

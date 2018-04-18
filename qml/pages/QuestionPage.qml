@@ -120,12 +120,13 @@ Page {
                         anchors.left: parent.left
                         anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
                         anchors.right: parent.right
+                        padding: Theme.paddingMedium
                     }
 
                     Hr {
                         width: parent.width
                         paddingTop: Theme.paddingMedium
-                        paddingBottom: Theme.paddingMedium
+                        paddingBottom: 2 * Theme.paddingMedium
                     }
 
                     Label {
@@ -140,7 +141,7 @@ Page {
 
                     Hr {
                         width: parent.width
-                        paddingTop: Theme.paddingLarge
+                        paddingTop: 2 * Theme.paddingLarge
                     }
 
                     Repeater {
@@ -163,10 +164,13 @@ Page {
 
                     AnswerButton {
                         width: parent.width
+                        padding: Theme.paddingMedium
                     }
 
                     Hr {
                         width: parent.width
+                        paddingTop: Theme.paddingMedium
+                        opacity: 0
                     }
                 }
             }

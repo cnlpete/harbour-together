@@ -11,6 +11,11 @@ ApplicationWindow
     cover: Qt.resolvedUrl("cover/CoverPage.qml")
     allowedOrientations: defaultAllowedOrientations
 
+    FontLoader {
+        id: iconFont
+        source: "fonts/fa-solid-900.ttf"
+    }
+
     Settings {
         id: settings
     }
@@ -30,20 +35,7 @@ ApplicationWindow
 
             setHandler('error', function(msg){
                 console.log(msg)
-
-                var text = ""
-                switch (msg){
-                case 'NETWORK_ERROR':
-                    text = qsTr("Network problem occurred")
-                    break;
-                case 'CONTENT_ERROR':
-                    text = qsTr("Could not get content")
-                    break;
-                default:
-                    text = msg
-                }
-
-                banner.alert(text)
+                banner.alert(msg)
             })
 
             importModule('app', function(){})

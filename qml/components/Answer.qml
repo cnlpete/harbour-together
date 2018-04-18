@@ -100,11 +100,13 @@ Rectangle {
             anchors.left: parent.left
             anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
             anchors.right: parent.right
+            padding: Theme.paddingMedium
         }
 
         Hr {
             width: parent.width
             paddingTop: Theme.paddingMedium
+            paddingBottom: Theme.paddingMedium
         }
     }
 

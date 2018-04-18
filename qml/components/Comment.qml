@@ -36,6 +36,7 @@ Rectangle {
             width: parent.width
             opacity: 0.4
             paddingTop: Theme.paddingMedium
+            paddingBottom: Theme.paddingMedium
             anchors.left: content.left
         }
     }
