@@ -122,7 +122,7 @@ Page {
                 onClicked: {
                     p++
                     pushUpMenu.busy = true
-                    refresh(true)
+                    refresh()
                 }
             }
         }

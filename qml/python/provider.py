@@ -2,6 +2,7 @@ import sys
 import traceback
 import urllib.request
 import json
+import re
 
 import markdown
 import timeago
@@ -15,16 +16,14 @@ class Provider:
     def __init__(self):
         pass
 
-    def get_questions(self, params = {}):
+    def get_questions(self, params={}):
         """
         Get questions list
         """
 
-        url = BASE_URL + 'api/v1/questions/'
-        if params:
-            url += '?' + urllib.parse.urlencode(self.clean_params(params))
+        url = self.build_list_url(params)
 
-        return self.request('get', url, 'parse_questions', params)
+        return self.request('get', url, '_parse_questions', params)
 
     def markdown(self, text):
         """
@@ -37,18 +36,18 @@ class Provider:
             Tools.log(traceback.format_exc())
             raise Exception('Markdown convert failed')
 
-    def get_question(self, question):
+    def get_question(self, params={}):
         """
         Get question details
         """
 
-        url = self.build_url(question)
+        url = self.build_details_url(params)
 
-        return self.request('get', url, 'parse_question', question)
+        return self.request('get', url, '_parse_question', params)
 
-    def parse_question(self, text, question):
+    def _parse_question(self, text, params={}):
         """
-        Parse question data from html response
+        Parse question details from html response
         """
 
         dom = BeautifulSoup(text, 'html.parser')
@@ -56,7 +55,7 @@ class Provider:
         data = {}
 
         # If requested page is not first page, it mean we only need load more answers
-        if question.page == 1:
+        if params['page'] == 1:
             # Parse user info
             data['user'] = {}
             post_node = dom.select_one('div.post.question')
@@ -64,12 +63,12 @@ class Provider:
                 user_node = post_node.find('div', class_='post-update-info-container')
                 if user_node is not None:
                     data['user'] = self.parse_user(user_node)
-                    data['user']['username'] = question.author
+                    data['user']['username'] = params['author']
                     data['user']['is_author'] = True
 
             # Parse question's comments
             data['comments'] = []
-            comments_node = dom.find(id='comments-for-question-' + str(int(question.id)))
+            comments_node = dom.find(id='comments-for-question-' + str(int(params['id'])))
             if comments_node is not None:
                 data['comments'] = self.parse_comment(comments_node)
 
@@ -92,18 +91,33 @@ class Provider:
 
         return data
 
-    def build_url(self, question):
+    def build_list_url(self, params={}):
         """
-        Build url for question page, including paging, sort
+        Build url for question list
         """
 
-        url = question.url
+        url = BASE_URL + 'api/v1/questions/'
+        if params:
+            url += '?' + urllib.parse.urlencode(self.clean_params(params))
 
-        url += '?page=' + str(int(question.page))
+        return url
+
+    def build_details_url(self, params={}):
+        """
+        Build url for question page details, including paging, sorting
+        """
+
+        url = params['url']
+
+        url += '?page=' + str(int(params['page'])) + '&sort=' + str(params['sort'])
 
         return url
 
     def parse_answer(self, node):
+        """
+        Parse answers from html
+        """
+
         data = []
 
         if node is not None:
@@ -123,11 +137,11 @@ class Provider:
                         if p.name == 'pre':
                             style += 'white-space:normal;'
                         p['style'] = style
-                        item['content'] += str(p)
+                        item['content'] += self.parse_content(p)
 
                     answer_avatar_node = answer_info_node.find('img', class_='gravatar')
                     if answer_avatar_node is not None:
-                        item['avatar_url'] = 'http:' + answer_avatar_node.get('src')
+                        item['avatar_url'] = 'https:' + self.get_gravatar(answer_avatar_node.get('src'))
 
                 # Parse answer's comments
                 answer_comments_node = answer_node.find('div', class_='comments')
@@ -137,6 +151,38 @@ class Provider:
                 data.append(item)
 
         return data
+
+    def get_gravatar(self, source):
+        """
+        Return Gravatar with maximum size
+        """
+
+        return re.sub('s=(\d+)', 's=100', source)
+
+    def parse_content(self, node):
+        """
+        Parse body of question, answer or comment
+        """
+
+        for image_node in node.find_all('img'):
+            source = image_node.get('src')
+            image_node['src'] = self.get_link(source)
+
+        return str(node)
+
+    def get_link(self, link):
+        """
+        Return validate link
+        """
+
+        if link.find('http') == 0:
+            return link
+        elif link.find('//') == 0:
+            return 'http:' + link
+        elif link.find('/') == 0:
+            return BASE_URL + link
+        else:
+            return link
 
     def parse_comment(self, node):
         """
@@ -237,7 +283,7 @@ class Provider:
 
         return getattr(self, callback)(response.read().decode('utf-8'), params)
 
-    def parse_questions(self, text, params):
+    def _parse_questions(self, text, params):
         """
         Parse questions from API response
         """
@@ -265,7 +311,6 @@ class Provider:
             item['answer_count_label'] = self.convert_count(q['answer_count'])
             item['view_count'] = q['view_count']
             item['view_count_label'] = self.convert_count(q['view_count'])
-            item['page'] = 1
 
             output['questions'].append(item)
 

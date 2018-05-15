@@ -5,6 +5,9 @@ import "../components"
 Page {
     property variant question
     property variant userModel
+    property int p: 1
+    property string sort: "votes"
+
 
     allowedOrientations: Orientation.All
 
@@ -185,8 +188,8 @@ Page {
             MenuItem {
                 text: qsTr("Load more")
                 onClicked: {
-                    question.page += 1
-                    py.call("app.main.get_question", [question])
+                    p += 1
+                    refresh()
                 }
             }
         }
@@ -218,6 +221,16 @@ Page {
             busyIndicator.visible = false
         })
 
-        py.call('app.main.get_question', [question])
+        refresh()
+    }
+
+    function refresh(){
+        py.call('app.main.get_question', [{
+                                              id: question.id,
+                                              url: question.url,
+                                              author: question.author,
+                                              page: p,
+                                              sort: sort
+                                          }])
     }
 }

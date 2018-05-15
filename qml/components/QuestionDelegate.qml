@@ -3,15 +3,15 @@ import Sailfish.Silica 1.0
 
 BackgroundItem {
     id: delegate
-    height: titleLbl.height + authorLbl.height + Theme.horizontalPageMargin
+    height: titleLbl.height + authorLbl.height + 2 * Theme.horizontalPageMargin
 
     Column {
         anchors {
             fill: parent
             leftMargin: Theme.horizontalPageMargin
             rightMargin: Theme.horizontalPageMargin
-            topMargin: Theme.horizontalPageMargin / 2
-            bottomMargin: Theme.horizontalPageMargin / 2
+            topMargin: Theme.horizontalPageMargin
+            bottomMargin: Theme.horizontalPageMargin
         }
 
         Label {
