@@ -141,7 +141,7 @@ class Provider:
 
                     answer_avatar_node = answer_info_node.find('img', class_='gravatar')
                     if answer_avatar_node is not None:
-                        item['avatar_url'] = 'https:' + self.get_gravatar(answer_avatar_node.get('src'))
+                        item['avatar_url'] = 'https:' + self.get_gravatar(answer_avatar_node.get('src'), 100)
 
                 # Parse answer's comments
                 answer_comments_node = answer_node.find('div', class_='comments')
@@ -152,12 +152,12 @@ class Provider:
 
         return data
 
-    def get_gravatar(self, source):
+    def get_gravatar(self, source, size=100):
         """
         Return Gravatar with maximum size
         """
 
-        return re.sub('s=(\d+)', 's=100', source)
+        return re.sub('s=(\d+)', 's=' + str(size), self.get_link(source))
 
     def parse_content(self, node):
         """
@@ -216,18 +216,17 @@ class Provider:
         data = {}
 
         if node is not None:
-            node1 = node.find('div', class_='post-update-info')
-            if node1 is not None:
-                date_node = node1.find('abbr', class_='timeago')
-                if date_node is not None:
-                    data['date'] = date_node.get('title')
-                    data['date_ago'] = timeago.format(self.parse_date(data['date']))
-
-                card_node = node1.find('div', class_='user-card')
+            for post_node in node.find_all('div', class_='post-update-info'):
+                card_node = post_node.find('div', class_='user-card')
                 if card_node is not None:
+                    date_node = post_node.find('abbr', class_='timeago')
+                    if date_node is not None:
+                        data['date'] = date_node.get('title')
+                        data['date_ago'] = timeago.format(self.parse_date(data['date']))
+
                     avatar_node = card_node.find('img', class_='gravatar')
                     if avatar_node is not None:
-                        data['avatar_url'] = 'http:' + avatar_node.get('src')
+                        data['avatar_url'] = self.get_gravatar(avatar_node.get('src'), 100)
 
                     info_node = card_node.find('div', class_='user-info')
                     if info_node is not None:

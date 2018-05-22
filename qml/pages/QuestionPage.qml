@@ -188,6 +188,7 @@ Page {
             MenuItem {
                 text: qsTr("Load more")
                 onClicked: {
+                    pushUpMenu.busy = true
                     p += 1
                     refresh()
                 }
@@ -202,19 +203,24 @@ Page {
                     commentModel.append(rs.comments[i])
                 }
             }
+
             if (rs.answers){
                 for (var i=0; i<rs.answers.length; i++){
                     answerModel.append(rs.answers[i])
                 }
             }
+
             if (rs.user){
                 userModel = rs.user
             }
+
             if (rs.has_pages){
                 pushUpMenu.visible = true
             }else{
                 pushUpMenu.visible = false
             }
+
+            pushUpMenu.busy = false
         })
 
         py.setHandler('question.error', function(){

@@ -54,24 +54,6 @@ Page {
             }
 
             MenuItem {
-                text: searchMode ? qsTr("Hide search") : qsTr("Search")
-                onClicked: {
-                    searchMode = !searchMode
-                    listView.headerItem._titleItem.visible = !searchMode
-                    listView.headerItem.searchField.visible = searchMode
-                    if (searchMode == false){
-                        if (query != ""){
-                            query = ""
-                            p = 1
-                            refresh()
-                        }
-                    }else{
-                        listView.headerItem.searchField.forceActiveFocus()
-                    }
-                }
-            }
-
-            MenuItem {
                 text: qsTr("Refresh")
                 onClicked: {
                     p = 1
@@ -83,13 +65,10 @@ Page {
         header: PageHeader {
             property alias searchField: searchField
 
-            title: qsTr("Questions")
-
             SearchField {
                 id: searchField
-                visible: false
                 width: parent.width
-                placeholderText: "Search"
+                placeholderText: qsTr("Search, ask or submit idea")
 
                 EnterKey.enabled: searchField.text.length > 0
                 EnterKey.onClicked: {
@@ -97,6 +76,15 @@ Page {
                     query = searchField.text
                     p = 1
                     refresh()
+                }
+
+                onTextChanged: {
+                    if (!searchField.text){
+                        searchField.focus = false
+                        query = ""
+                        p = 1
+                        refresh()
+                    }
                 }
             }
         }
