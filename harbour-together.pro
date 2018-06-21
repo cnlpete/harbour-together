@@ -27,7 +27,8 @@ DISTFILES += qml/*.qml \
     harbour-together.desktop \
     rpm/harbour-together.changes.run \
     rpm/harbour-together.changes \
-    qml/python/*.py
+    qml/python/*.py \
+    qml/js/ultils.js
 
 SAILFISHAPP_ICONS = 86x86 108x108 128x128
 

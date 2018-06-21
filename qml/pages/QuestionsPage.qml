@@ -79,7 +79,7 @@ Page {
                 }
 
                 onTextChanged: {
-                    if (!searchField.text){
+                    if (!searchField.text && query){
                         searchField.focus = false
                         query = ""
                         p = 1

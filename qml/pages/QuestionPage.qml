@@ -4,6 +4,7 @@ import "../components"
 
 Page {
     property variant question
+    property string url
     property variant userModel
     property int p: 1
     property string sort: "votes"
@@ -231,12 +232,16 @@ Page {
     }
 
     function refresh(){
-        py.call('app.main.get_question', [{
-                                              id: question.id,
-                                              url: question.url,
-                                              author: question.author,
-                                              page: p,
-                                              sort: sort
-                                          }])
+        if (question){
+            py.call('app.main.get_question', [{
+                                                  id: question.id,
+                                                  url: question.url,
+                                                  author: question.author,
+                                                  page: p,
+                                                  sort: sort
+                                              }])
+        }else if (url){
+            py.call("app.main.get_question_url", [url])
+        }
     }
 }

@@ -26,7 +26,6 @@ Rectangle {
                 id: avatarImg
                 source: dataModel && dataModel.avatar_url ? dataModel.avatar_url : ""
                 anchors.fill: parent
-                Component.onCompleted: dataModel && console.log(dataModel.avatar_url)
             }
 
             Rectangle {

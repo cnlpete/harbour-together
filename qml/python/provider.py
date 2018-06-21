@@ -41,9 +41,25 @@ class Provider:
         Get question details
         """
 
-        url = self.build_details_url(params)
+        if 'author' in params:
+            url = self.build_details_url(params)
+            return self.request('get', url, '_parse_question', params)
+        else:
+            url = self.build_details_url(params)
+            return self.request('get', url, '_parse_question_json', params)
 
-        return self.request('get', url, '_parse_question', params)
+    def _parse_question_json(self, text, params={}):
+        """
+        Parse question details from API response
+        """
+
+        try:
+            data = json.loads(text)
+        except ValueError as e:
+            Tools.log(traceback.format_exc())
+            raise Exception('Could not get content')
+
+        return self.convert_question(data)
 
     def _parse_question(self, text, params={}):
         """
@@ -107,9 +123,11 @@ class Provider:
         Build url for question page details, including paging, sorting
         """
 
-        url = params['url']
-
-        url += '?page=' + str(int(params['page'])) + '&sort=' + str(params['sort'])
+        if 'url' in params:
+            url = params['url']
+            url += '?page=' + str(int(params['page'])) + '&sort=' + str(params['sort'])
+        elif 'id' in params:
+            url = BASE_URL + 'api/v1/questions/' + params['id']
 
         return url
 
@@ -271,7 +289,7 @@ class Provider:
         Perform network request
         """
 
-        Tools.log(method.upper() + ' ' + url)
+        Tools.log(method.upper() + ': ' + url)
 
         try:
             response = urllib.request.urlopen(url)
@@ -297,23 +315,30 @@ class Provider:
 
         output['questions'] = []
         for q in data['questions']:
-            item = {}
-            item['id'] = q['id']
-            item['title'] = q['title']
-            item['body'] = q['text']
-            item['author_id'] = q['author']['id']
-            item['author'] = q['author']['username']
-            item['url'] = q['url']
-            item['score'] = q['score']
-            item['score_label'] = self.convert_count(q['score'])
-            item['answer_count'] = q['answer_count']
-            item['answer_count_label'] = self.convert_count(q['answer_count'])
-            item['view_count'] = q['view_count']
-            item['view_count_label'] = self.convert_count(q['view_count'])
-
-            output['questions'].append(item)
+            output['questions'].append(self.convert_question(q))
 
         return output
+
+    def convert_question(self, q):
+        """
+        Convert question raw data
+        """
+
+        item = {}
+        item['id'] = q['id']
+        item['title'] = q['title']
+        item['body'] = q['text']
+        item['author_id'] = q['author']['id']
+        item['author'] = q['author']['username']
+        item['url'] = q['url']
+        item['score'] = q['score']
+        item['score_label'] = self.convert_count(q['score'])
+        item['answer_count'] = q['answer_count']
+        item['answer_count_label'] = self.convert_count(q['answer_count'])
+        item['view_count'] = q['view_count']
+        item['view_count_label'] = self.convert_count(q['view_count'])
+
+        return item
 
     def convert_count(self, count):
         """

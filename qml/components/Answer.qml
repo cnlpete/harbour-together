@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import "../js/ultils.js" as Ultils
 
 Rectangle {
     property variant dataModel
@@ -68,6 +69,7 @@ Rectangle {
                     wrapMode: Text.WordWrap
                     font.pixelSize: Theme.fontSizeSmall
                     width: parent.width
+                    onLinkActivated: Ultils.handleLink(link)
                 }
             }
         }

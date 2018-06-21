@@ -15,6 +15,7 @@ class App:
         try:
             data = self.provider.get_questions(params)
             Tools.send('questions.finished', data)
+            return data
         except Exception as e:
             Tools.log(traceback.format_exc())
             Tools.send('questions.error')
@@ -28,6 +29,7 @@ class App:
         try:
             data = self.provider.get_question(params)
             Tools.send('question.finished', data)
+            return data
         except Exception as e:
             Tools.log(traceback.format_exc())
             Tools.send('question.error')
@@ -41,6 +43,7 @@ class App:
         try:
             data = self.provider.markdown(text)
             Tools.send('markdown.finished', data)
+            return data
         except Exception as e:
             Tools.send('markdown.error')
             Tools.error(e.args[0])
