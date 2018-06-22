@@ -12,7 +12,7 @@ Page {
     property string direction: "desc"
     property string query: ""
     property string tags: ""
-    property bool searchMode: false
+    property bool loading: false
 
     allowedOrientations: Orientation.All
 
@@ -54,10 +54,12 @@ Page {
             }
 
             MenuItem {
-                text: qsTr("Refresh")
+                text: loading ? qsTr("Refreshing...") : qsTr("Refresh")
                 onClicked: {
-                    p = 1
-                    refresh()
+                    if (!loading){
+                        p = 1
+                        refresh()
+                    }
                 }
             }
         }
@@ -106,11 +108,13 @@ Page {
             visible: false
 
             MenuItem {
-                text: qsTr("Load more")
+                text: loading ? qsTr("Loading...") : qsTr("Load more")
                 onClicked: {
-                    p++
-                    pushUpMenu.busy = true
-                    refresh()
+                    if (!loading){
+                        p++
+                        pushUpMenu.busy = true
+                        refresh()
+                    }
                 }
             }
         }
@@ -130,6 +134,7 @@ Page {
             pullDownMenu.busy = false
             pushUpMenu.busy = false
             loader.visible = false
+            loading = false
 
             if (rs.questions){
                 pushUpMenu.visible = true
@@ -144,6 +149,7 @@ Page {
             loader.visible = false
             pullDownMenu.busy = false
             pushUpMenu.busy = false
+            loading = false
         })
 
         refresh()
@@ -176,6 +182,8 @@ Page {
     }
 
     function refresh(){
+        loading = true
+
         if (p == 1){
             listModel.clear()
             loader.visible = true

@@ -1,13 +1,15 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import "../components"
+import "../js/ultils.js" as Ultils
 
 Page {
     property variant question
-    property string url
+    property int question_id
     property variant userModel
     property int p: 1
     property string sort: "votes"
+    property bool loading: false
 
 
     allowedOrientations: Orientation.All
@@ -25,7 +27,7 @@ Page {
             }
 
             PageHeader {
-                title: question.title
+                title: question ? question.title : ""
             }
 
             Column {
@@ -35,7 +37,7 @@ Page {
                 }
 
                 Label {
-                    text: question.body
+                    text: question ? question.body : ""
                     color: Theme.primaryColor
                     wrapMode: Text.WordWrap
                     font.pixelSize: Theme.fontSizeSmall
@@ -47,6 +49,7 @@ Page {
                         right: parent.right
                         rightMargin: Theme.paddingMedium
                     }
+                    onLinkActivated: Ultils.handleLink(link)
                 }
 
                 Row {
@@ -71,7 +74,13 @@ Page {
                     }
 
                     Label {
-                        text: busyIndicator.visible ? qsTr("Loading anwsers") + "..." : qsTr("Failed")
+                        text: {
+                            if (question){
+                                busyIndicator.visible ? qsTr("Loading anwsers") + "..." : qsTr("Failed")
+                            }else if(question_id){
+                                busyIndicator.visible ? qsTr("Loading question") + "..." : qsTr("Failed")
+                            }
+                        }
                         color: Theme.primaryColor
                         font.pixelSize: Theme.fontSizeSmall
                         anchors.verticalCenter: parent.verticalCenter
@@ -134,7 +143,7 @@ Page {
                     }
 
                     Label {
-                        text: question.answer_count + " " + (qsTr("Answers"))
+                        text: question ? (question.answer_count + " " + (qsTr("Answers"))) : ""
                         color: Theme.primaryColor
                         wrapMode: Text.WordWrap
                         font.pixelSize: Theme.fontSizeSmall
@@ -187,11 +196,13 @@ Page {
             visible: false
 
             MenuItem {
-                text: qsTr("Load more")
+                text: loading ? qsTr("Loading...") : qsTr("Load more")
                 onClicked: {
-                    pushUpMenu.busy = true
-                    p += 1
-                    refresh()
+                    if (!loading){
+                        pushUpMenu.busy = true
+                        p += 1
+                        refresh()
+                    }
                 }
             }
         }
@@ -222,10 +233,19 @@ Page {
             }
 
             pushUpMenu.busy = false
+            loading = false
+        })
+
+        py.setHandler('question.id.finished', function(rs){
+            if (rs){
+                question = rs
+                refresh()
+            }
         })
 
         py.setHandler('question.error', function(){
             busyIndicator.visible = false
+            loading = false
         })
 
         refresh()
@@ -233,6 +253,7 @@ Page {
 
     function refresh(){
         if (question){
+            loading = true
             py.call('app.main.get_question', [{
                                                   id: question.id,
                                                   url: question.url,
@@ -240,8 +261,8 @@ Page {
                                                   page: p,
                                                   sort: sort
                                               }])
-        }else if (url){
-            py.call("app.main.get_question_url", [url])
+        }else if (question_id){
+            py.call("app.main.get_question_by_id", [question_id])
         }
     }
 }

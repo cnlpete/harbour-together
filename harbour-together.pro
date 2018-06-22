@@ -23,12 +23,12 @@ SOURCES += src/harbour-together.cpp \
 DISTFILES += qml/*.qml \
     rpm/harbour-together.spec \
     rpm/harbour-together.yaml \
+    rpm/harbour-together.changes \
     translations/*.ts \
     harbour-together.desktop \
-    rpm/harbour-together.changes.run \
-    rpm/harbour-together.changes \
     qml/python/*.py \
-    qml/js/ultils.js
+    qml/js/*.js \
+    qml/fonts/*.ttf
 
 SAILFISHAPP_ICONS = 86x86 108x108 128x128
 

@@ -1,19 +1,14 @@
 function handleLink(link) {
-    console.log("Open link: " + link);
-
     if (link.indexOf("together.jolla.com/question/") > -1){
+        console.log("Internal link: " + link);
         var id = parseQuestionId(link);
         if (id){
-            py.call("app.main.get_question_id", [{id: id}], function(data){
-                if (data){
-                    py.call('app.main.markdown', [data.body], function(html){
-                        data.body = html
-                        pageStack.push(Qt.resolvedUrl("../pages/QuestionPage.qml"), {question: data})
-                    });
-                }
-            });
+            pageStack.push(Qt.resolvedUrl("../pages/QuestionPage.qml"), {question_id: id});
+        }else{
+            console.log("Could not found question ID");
         }
     }else{
+        console.log("External link: " + link);
         Qt.openUrlExternally(link);
     }
 }

@@ -35,6 +35,20 @@ class App:
             Tools.send('question.error')
             Tools.error(e.args[0])
 
+    def get_question_by_id(self, id, params={}):
+        """
+        Get question details by ID
+        """
+
+        try:
+            data = self.provider.get_question_by_id(id, params)
+            Tools.send('question.id.finished', data)
+            return data
+        except Exception as e:
+            Tools.log(traceback.format_exc())
+            Tools.send('question.error')
+            Tools.error(e.args[0])
+
     def markdown(self, text):
         """
         Convert Markdown format to HTML

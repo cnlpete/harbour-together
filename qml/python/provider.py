@@ -41,11 +41,16 @@ class Provider:
         Get question details
         """
 
-        if 'author' in params:
-            url = self.build_details_url(params)
-            return self.request('get', url, '_parse_question', params)
-        else:
-            url = self.build_details_url(params)
+        url = self.build_details_url(params)
+        return self.request('get', url, '_parse_question', params)
+
+    def get_question_by_id(self, id, params={}):
+        """
+        Get question details by ID from API
+        """
+
+        if id:
+            url = BASE_URL + 'api/v1/questions/' + str(id)
             return self.request('get', url, '_parse_question_json', params)
 
     def _parse_question_json(self, text, params={}):
@@ -59,7 +64,10 @@ class Provider:
             Tools.log(traceback.format_exc())
             raise Exception('Could not get content')
 
-        return self.convert_question(data)
+        output = self.convert_question(data)
+        output['body'] = markdown.markdown(output['body'])
+
+        return output
 
     def _parse_question(self, text, params={}):
         """
@@ -126,10 +134,7 @@ class Provider:
         if 'url' in params:
             url = params['url']
             url += '?page=' + str(int(params['page'])) + '&sort=' + str(params['sort'])
-        elif 'id' in params:
-            url = BASE_URL + 'api/v1/questions/' + params['id']
-
-        return url
+            return url
 
     def parse_answer(self, node):
         """
