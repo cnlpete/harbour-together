@@ -26,7 +26,7 @@ Rectangle {
 
             Column {
                 id: leftCol
-                width: Theme.horizontalPageMargin + Theme.itemSizeSmall
+                width: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
                 height: 1
 
                 IconButton {
@@ -38,14 +38,14 @@ Rectangle {
 
                 Label {
                     id: voteLbl
-                    text: "38"
+                    text: dataModel.vote_count_label
                     color: Theme.primaryColor
-                    font.pixelSize: Theme.fontSizeSmall
-                    font.bold: true
-                    width: parent.width
+                    font.pixelSize: Theme.fontSizeLarge
+                    width: Theme.itemSizeSmall
+                    anchors.left: parent.left
+                    anchors.leftMargin: Theme.horizontalPageMargin
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    visible: false
                 }
 
                 IconButton {
@@ -58,7 +58,7 @@ Rectangle {
 
             Column {
                 id: rightCol
-                width: parent.width - leftCol.width - Theme.paddingMedium
+                width: parent.width - leftCol.width// - Theme.paddingMedium - Theme.horizontalPageMargin
 
                 Label {
                     id: text

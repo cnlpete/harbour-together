@@ -42,6 +42,7 @@ class Provider:
         """
 
         url = self.build_details_url(params)
+
         return self.request('get', url, '_parse_question', params)
 
     def get_question_by_id(self, id, params={}):
@@ -148,10 +149,21 @@ class Provider:
                 item = {}
 
                 item['id'] = answer_node['data-post-id']
+
+                # User info
                 answer_user_node = answer_node.find('div', class_='post-update-info-container')
                 if answer_user_node is not None:
                     item['user'] = self.parse_user(answer_user_node)
 
+                # Vote count
+                item['vote_count'] = 0
+                item['vote_count_label'] = 0
+                answer_vote_node = answer_node.find('div', id='answer-vote-number-' + str(item['id']))
+                if answer_vote_node is not None:
+                    item['vote_count'] = answer_vote_node.get_text()
+                    item['vote_count_label'] = self.convert_count(item['vote_count'])
+
+                # Content
                 answer_info_node = answer_node.find('div', class_='post-update-info-container')
                 if answer_info_node is not None:
                     item['content'] = ''
@@ -222,10 +234,13 @@ class Provider:
 
                     item['content'] = ''
                     for p in comment_body_node.find_all(recursive=False):
-                        if p.name == 'a':
+                        if 'class' in p.attrs and 'author' in p['class']:
                             item['author'] = p.get_text()
-                            break
-                        item['content'] += str(p).strip()
+                        elif 'class' in p.attrs and 'age' in p['class']:
+                            item['date'] = p.abbr['title']
+                            item['date_ago'] = timeago.format(self.parse_date(item['date']))
+                        else:
+                            item['content'] += str(p).strip()
 
                     data.append(item)
 
@@ -243,29 +258,31 @@ class Provider:
                 card_node = post_node.find('div', class_='user-card')
                 if card_node is not None:
                     date_node = post_node.find('abbr', class_='timeago')
-                    if date_node is not None:
+                    if 'date' not in data.keys() and date_node is not None:
                         data['date'] = date_node.get('title')
                         data['date_ago'] = timeago.format(self.parse_date(data['date']))
 
                     avatar_node = card_node.find('img', class_='gravatar')
-                    if avatar_node is not None:
+                    if 'avatar_url' not in data.keys() and avatar_node is not None:
                         data['avatar_url'] = self.get_gravatar(avatar_node.get('src'), 100)
 
                     info_node = card_node.find('div', class_='user-info')
                     if info_node is not None:
                         name_node = info_node.find('a', recursive=False)
-                        if name_node is not None:
+                        if 'username' not in data.keys() and name_node is not None:
                             data['username'] = name_node.get_text()
 
                         reputation_node = info_node.find('span', class_='reputation-score')
-                        if reputation_node is not None:
+                        if 'reputation' not in data.keys() and reputation_node is not None:
                             data['reputation'] = reputation_node.get_text()
 
-                        for i in range(1, 4):
-                            badge = info_node.find('span', class_='badge' + str(i))
-                            if badge is not None:
-                                value = badge.find_next_sibling('span', class_='badgecount').get_text()
-                                data['badge' + str(i)] = value
+                        if 'has_badge' not in data.keys():
+                            for i in range(1, 4):
+                                badge = info_node.find('span', class_='badge' + str(i))
+                                if badge is not None:
+                                    value = badge.find_next_sibling('span', class_='badgecount').get_text()
+                                    data['badge' + str(i)] = value
+                                    data['has_badge'] = True
 
         return data
 
@@ -351,6 +368,7 @@ class Provider:
         Ex: 2543 => 2k
         """
 
+        count = int(count)
         if count >= 1000:
             return str(int(count / 1000)) + 'k'
         else:

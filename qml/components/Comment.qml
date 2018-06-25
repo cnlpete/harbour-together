@@ -17,7 +17,7 @@ Rectangle {
             id: content
             text: dataModel.content
             color: Theme.secondaryColor
-            linkColor: Theme.highlightColor
+            linkColor: Theme.secondaryHighlightColor
             font.pixelSize: Theme.fontSizeExtraSmall
             wrapMode: Text.WordWrap
             anchors.left: parent.left
@@ -27,11 +27,22 @@ Rectangle {
             onLinkActivated: Ultils.handleLink(link)
         }
 
-        Label {
-            text: dataModel.author
-            color: Theme.primaryColor
-            font.pixelSize: Theme.fontSizeExtraSmall
+        Row {
+            width: parent.width
             anchors.left: content.left
+            spacing: Theme.paddingMedium
+
+            Label {
+                text: dataModel.author
+                color: Theme.highlightColor
+                font.pixelSize: Theme.fontSizeExtraSmall
+            }
+
+            Label {
+                text: dataModel.date_ago ? "(" + dataModel.date_ago + ")" : ""
+                color: Theme.secondaryColor
+                font.pixelSize: Theme.fontSizeExtraSmall
+            }
         }
 
         Hr {
