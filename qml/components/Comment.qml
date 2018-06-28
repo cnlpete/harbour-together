@@ -16,6 +16,7 @@ Rectangle {
         Label {
             id: content
             text: dataModel.content
+            textFormat: Text.StyledText
             color: Theme.secondaryColor
             linkColor: Theme.secondaryHighlightColor
             font.pixelSize: Theme.fontSizeExtraSmall

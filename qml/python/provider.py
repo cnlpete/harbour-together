@@ -239,8 +239,8 @@ class Provider:
                         elif 'class' in p.attrs and 'age' in p['class']:
                             item['date'] = p.abbr['title']
                             item['date_ago'] = timeago.format(self.parse_date(item['date']))
-                        else:
-                            item['content'] += str(p).strip()
+                        elif p.name == 'p' or p.name == 'del':
+                            item['content'] += self.parse_content(p)
 
                     data.append(item)
 
