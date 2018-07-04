@@ -48,6 +48,18 @@ Rectangle {
                     verticalAlignment: Text.AlignVCenter
                 }
 
+                Label {
+                    font.family: iconFont.name
+                    text: "\uf164"
+                    color: Theme.secondaryColor
+                    font.pixelSize: Theme.fontSizeSmall
+                    width: Theme.itemSizeSmall
+                    anchors.left: parent.left
+                    anchors.leftMargin: Theme.horizontalPageMargin
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+
                 IconButton {
                     id: downBtn
                     icon.source: "image://theme/icon-m-down"
