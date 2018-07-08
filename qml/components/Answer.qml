@@ -5,6 +5,7 @@ import "../js/ultils.js" as Ultils
 Rectangle {
     property variant dataModel
     property variant userModel
+    property variant questionModel
 
     height: container.height
     color: "transparent"
@@ -115,6 +116,10 @@ Rectangle {
             anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
             anchors.right: parent.right
             padding: Theme.paddingMedium
+            onClicked: {
+                var url = questionModel.url + '#comments-for-answer-' + dataModel.id
+                Ultils.handleLink(url, true)
+            }
         }
 
         Hr {

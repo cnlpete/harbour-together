@@ -28,10 +28,12 @@ class Provider:
     def markdown(self, text):
         """
         Convert Markdown text to HTML
+        Also process images, links...
         """
 
         try:
-            return markdown.markdown(text)
+            html = markdown.markdown(text)
+            return self.convert_content(html)
         except:
             Tools.log(traceback.format_exc())
             raise Exception('Markdown convert failed')
@@ -66,7 +68,7 @@ class Provider:
             raise Exception('Could not get content')
 
         output = self.convert_question(data)
-        output['body'] = markdown.markdown(output['body'])
+        output['body'] = self.markdown(output['body'])
 
         return output
 
@@ -193,6 +195,18 @@ class Provider:
         """
 
         return re.sub('s=(\d+)', 's=' + str(size), self.get_link(source))
+
+    def convert_content(self, html):
+        """
+        Convert html to DOM for process images, links...
+        Also return string processed
+        """
+
+        try:
+            dom = BeautifulSoup(html, 'html.parser')
+            return self.parse_content(dom)
+        except:
+            return html
 
     def parse_content(self, node):
         """

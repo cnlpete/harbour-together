@@ -28,7 +28,9 @@ DISTFILES += qml/*.qml \
     harbour-together.desktop \
     qml/python/*.py \
     qml/js/*.js \
-    qml/fonts/*.ttf
+    qml/fonts/*.ttf \
+    qml/fonts/LICENSE.txt \
+    qml/cover/CoverLabel.qml
 
 SAILFISHAPP_ICONS = 86x86 108x108 128x128
 

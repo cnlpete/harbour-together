@@ -5,11 +5,18 @@ import lbee.together.core 1.0
 import "pages"
 import "components"
 
-ApplicationWindow
-{
-    initialPage: Component { QuestionsPage { } }
+ApplicationWindow {
+    id: app
+
+    property Page mainPage
+    property bool loading: false
+
     cover: Qt.resolvedUrl("cover/CoverPage.qml")
     allowedOrientations: defaultAllowedOrientations
+
+    Component.onCompleted: {
+        mainPage = pageStack.push(Qt.resolvedUrl("pages/QuestionsPage.qml"))
+    }
 
     FontLoader {
         id: iconFont
@@ -18,10 +25,6 @@ ApplicationWindow
 
     Settings {
         id: settings
-    }
-
-    InfoBanner {
-        id: banner
     }
 
     Python {
@@ -35,10 +38,21 @@ ApplicationWindow
 
             setHandler('error', function(msg){
                 console.log(msg)
-                banner.alert(msg)
             })
 
             importModule('app', function(){})
+        }
+    }
+
+    function refresh(){
+        moveToMainPage()
+        mainPage.refresh()
+        loading = mainPage.loading
+    }
+
+    function moveToMainPage(){
+        if (pageStack.currentPage != mainPage){
+            pageStack.pop(mainPage, PageStackAction.Immediate)
         }
     }
 }

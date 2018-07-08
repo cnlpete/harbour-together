@@ -134,6 +134,10 @@ Page {
                         anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
                         anchors.right: parent.right
                         padding: Theme.paddingMedium
+                        onClicked: {
+                            var url = question.url + '#comments-for-question-' + question.id
+                            Ultils.handleLink(url, true)
+                        }
                     }
 
                     Hr {
@@ -163,13 +167,14 @@ Page {
                         }
 
                         Rectangle {
-                            width: parent.width
+                            width: parent.width - Theme.paddingSmall
                             height: answer.height
                             color: "transparent"
 
                             Answer {
                                 id: answer
                                 dataModel: model
+                                questionModel: question
                                 width: parent.width
                             }
                         }
@@ -178,6 +183,10 @@ Page {
                     AnswerButton {
                         width: parent.width
                         padding: Theme.paddingMedium
+                        onClicked: {
+                            var url = question.url + "#fmanswer"
+                            Ultils.handleLink(url, true)
+                        }
                     }
 
                     Hr {

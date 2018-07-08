@@ -182,6 +182,8 @@ Page {
     }
 
     function refresh(){
+        if (loading) return
+
         loading = true
 
         if (p == 1){

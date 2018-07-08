@@ -1,5 +1,5 @@
-function handleLink(link) {
-    if (link.indexOf("together.jolla.com/question/") > -1){
+function handleLink(link, forceExternal) {
+    if (!forceExternal && link.indexOf("together.jolla.com/question/") > -1){
         console.log("Internal link: " + link);
         var id = parseQuestionId(link);
         if (id){

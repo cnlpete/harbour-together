@@ -2,7 +2,11 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 
 Rectangle {
+    id: root
+
     property int padding: 0
+
+    signal clicked()
 
     color: "transparent"
     height: content.height + (2 * padding)
@@ -29,5 +33,6 @@ Rectangle {
     MouseArea {
         id: mouse
         anchors.fill: parent
+        onClicked: root.clicked()
     }
 }
