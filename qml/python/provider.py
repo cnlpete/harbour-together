@@ -3,6 +3,7 @@ import traceback
 import urllib.request
 import json
 import re
+from datetime import datetime, timezone, timedelta
 
 import markdown
 import timeago
@@ -11,6 +12,7 @@ from bs4 import BeautifulSoup
 from tools import Tools
 
 BASE_URL = 'https://together.jolla.com/'
+TIMEZONE = timezone(timedelta(hours=2), 'Europe/Helsinki')
 
 class Provider:
     def __init__(self):
@@ -373,6 +375,8 @@ class Provider:
         item['answer_count_label'] = self.convert_count(q['answer_count'])
         item['view_count'] = q['view_count']
         item['view_count_label'] = self.convert_count(q['view_count'])
+        item['added_at'] = q['added_at']
+        item['added_at_label'] = timeago.format(datetime.fromtimestamp(int(q['added_at']), TIMEZONE), datetime.now(TIMEZONE))
 
         return item
 

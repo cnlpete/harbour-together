@@ -29,8 +29,7 @@ DISTFILES += qml/*.qml \
     qml/python/*.py \
     qml/js/*.js \
     qml/fonts/*.ttf \
-    qml/fonts/LICENSE.txt \
-    qml/cover/CoverLabel.qml
+    qml/fonts/LICENSE.txt
 
 SAILFISHAPP_ICONS = 86x86 108x108 128x128
 

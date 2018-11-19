@@ -1,18 +1,22 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import "../components"
 
 BackgroundItem {
     id: delegate
-    height: titleLbl.height + authorLbl.height + 2 * Theme.horizontalPageMargin
+    height: column.height + 2 * Theme.horizontalPageMargin
 
     Column {
-        anchors {
-            fill: parent
-            leftMargin: Theme.horizontalPageMargin
-            rightMargin: Theme.horizontalPageMargin
-            topMargin: Theme.horizontalPageMargin
-            bottomMargin: Theme.horizontalPageMargin
-        }
+        id: column
+        height: titleLbl.height + row.height
+        width: parent.width
+        spacing: Theme.paddingSmall
+        anchors.left: parent.left
+        anchors.leftMargin: Theme.horizontalPageMargin
+        anchors.right: parent.right
+        anchors.rightMargin: Theme.horizontalPageMargin
+        anchors.top: parent.top
+        anchors.topMargin: Theme.horizontalPageMargin
 
         Label {
             // Question title
@@ -24,97 +28,63 @@ BackgroundItem {
             font.pixelSize: Theme.fontSizeSmall
         }
 
-        Rectangle {
-            // Question metadata
+        Row {
+            id: row
             width: parent.width
-            height: authorLbl.height
-            color: "transparent"
+            //height: authorIcon.height
+            spacing: Theme.paddingSmall
 
-            Label {
-                // Author
-                id: authorLbl
-                text: qsTr("by") + " " + author
-                anchors.left: parent.left
-                color: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                wrapMode: Text.WordWrap
-                font.pixelSize: Theme.fontSizeExtraSmall
+            QuestionMetadata {
+                iconValue: "\uf007"
+                textValue: author
             }
 
-            Row {
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: Theme.paddingSmall
+            Rectangle {
+                // Separator
+                color: "transparent"
+                width: Theme.paddingSmall
+                height: 1
+            }
 
-                Text {
-                    // Vote icon
-                    font.pixelSize: Theme.fontSizeExtraSmall
-                    font.family: iconFont.name
-                    text: "\uf164"
-                    anchors.verticalCenter: parent.verticalCenter
-                    opacity: 0.5
-                    color: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                }
+            QuestionMetadata {
+                iconValue: "\uf06e"
+                textValue: view_count_label
+            }
 
-                Label {
-                    // Vote count
-                    text: score_label
-                    color: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                    wrapMode: Text.WordWrap
-                    font.pixelSize: Theme.fontSizeExtraSmall
-                    anchors.verticalCenter: parent.verticalCenter
-                }
+            Rectangle {
+                // Separator
+                color: "transparent"
+                width: Theme.paddingSmall
+                height: 1
+            }
 
-                Rectangle {
-                    // Separator
-                    color: "transparent"
-                    width: Theme.paddingSmall
-                    height: 1
-                }
+            QuestionMetadata {
+                iconValue: "\uf164"
+                textValue: score_label
+            }
 
-                Text {
-                    // Answer icon
-                    font.pixelSize: Theme.fontSizeExtraSmall
-                    font.family: iconFont.name
-                    text: "\uf086"
-                    anchors.verticalCenter: parent.verticalCenter
-                    opacity: 0.5
-                    color: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                }
+            Rectangle {
+                // Separator
+                color: "transparent"
+                width: Theme.paddingSmall
+                height: 1
+            }
 
-                Label {
-                    // Answer count
-                    text: answer_count_label
-                    color: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                    wrapMode: Text.WordWrap
-                    font.pixelSize: Theme.fontSizeExtraSmall
-                    anchors.verticalCenter: parent.verticalCenter
-                }
+            QuestionMetadata {
+                iconValue: "\uf086"
+                textValue: answer_count_label
+            }
 
-                Rectangle {
-                    // Separator
-                    color: "transparent"
-                    width: Theme.paddingSmall
-                    height: 1
-                }
+            Rectangle {
+                // Separator
+                color: "transparent"
+                width: Theme.paddingSmall
+                height: 1
+            }
 
-                Text {
-                    // View icon
-                    font.pixelSize: Theme.fontSizeExtraSmall
-                    font.family: iconFont.name
-                    text: "\uf06e"
-                    anchors.verticalCenter: parent.verticalCenter
-                    opacity: 0.5
-                    color: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                }
-
-                Label {
-                    // View count
-                    text: view_count_label
-                    color: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
-                    wrapMode: Text.WordWrap
-                    font.pixelSize: Theme.fontSizeExtraSmall
-                    anchors.verticalCenter: parent.verticalCenter
-                }
+            QuestionMetadata {
+                iconValue: "\uf017"
+                textValue: added_at_label
             }
         }
     }

@@ -30,42 +30,16 @@ Rectangle {
                 width: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
                 height: 1
 
-                IconButton {
-                    id: upBtn
-                    icon.source: "image://theme/icon-m-up"
-                    width: parent.width
-                    visible: false
-                }
-
                 Label {
                     id: voteLbl
-                    text: dataModel.vote_count_label
+                    text: "\uf164 " + dataModel.vote_count_label
                     color: Theme.primaryColor
-                    font.pixelSize: Theme.fontSizeLarge
-                    width: Theme.itemSizeSmall
-                    anchors.left: parent.left
-                    anchors.leftMargin: Theme.horizontalPageMargin
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-
-                Label {
-                    font.family: iconFont.name
-                    text: "\uf164"
-                    color: Theme.secondaryColor
                     font.pixelSize: Theme.fontSizeSmall
                     width: Theme.itemSizeSmall
                     anchors.left: parent.left
                     anchors.leftMargin: Theme.horizontalPageMargin
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                }
-
-                IconButton {
-                    id: downBtn
-                    icon.source: "image://theme/icon-m-down"
-                    width: parent.width
-                    visible: false
                 }
             }
 
@@ -108,6 +82,16 @@ Rectangle {
                     dataModel: model
                     width: parent.width
                 }
+            }
+        }
+
+        CommentMoreButton {
+            anchors.left: parent.left
+            anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
+            anchors.right: parent.right
+            padding: Theme.paddingMedium
+            onClicked: {
+                console.log("more")
             }
         }
 
