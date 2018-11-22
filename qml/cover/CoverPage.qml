@@ -16,6 +16,16 @@ CoverBackground {
             count: "0"
             label: "new\nquestions"
         }
+
+        Label {
+            id: statusLabel
+            text: loading ? qsTr("Updating") : qsTr("Up to date")
+            x: Theme.paddingLarge
+            fontSizeMode: Text.VerticalFit
+            font.pixelSize: Theme.fontSizeLarge
+            width: parent.width - Theme.paddingLarge
+            color: Theme.highlightColor
+        }
     }
 
     CoverActionList {
@@ -44,6 +54,7 @@ CoverBackground {
         py.call('app.main.get_questions', [], function(data){
             if (data && data.count){
                 loading = false
+
                 if (!question_count){
                     question_count = data.count
                 }else if (data.count > question_count){
