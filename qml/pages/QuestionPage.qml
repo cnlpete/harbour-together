@@ -1,7 +1,7 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import "../components"
-import "../js/ultils.js" as Ultils
+import "../js/utils.js" as Utils
 
 Page {
     property variant question
@@ -30,7 +30,7 @@ Page {
                 MenuItem {
                     text: qsTr("View in browser")
                     onClicked: {
-                        Ultils.handleLink(question.url, true)
+                        Utils.handleLink(question.url, true)
                     }
                 }
             }
@@ -58,7 +58,7 @@ Page {
                         right: parent.right
                         rightMargin: Theme.paddingMedium
                     }
-                    onLinkActivated: Ultils.handleLink(link)
+                    onLinkActivated: Utils.handleLink(link)
                 }
 
                 Row {
@@ -145,7 +145,7 @@ Page {
                         padding: Theme.paddingMedium
                         onClicked: {
                             var url = question.url + '#comments-for-question-' + question.id
-                            Ultils.handleLink(url, true)
+                            Utils.handleLink(url, true)
                         }
                     }
 
@@ -194,7 +194,7 @@ Page {
                         padding: Theme.paddingMedium
                         onClicked: {
                             var url = question.url + "#fmanswer"
-                            Ultils.handleLink(url, true)
+                            Utils.handleLink(url, true)
                         }
                     }
 

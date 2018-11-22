@@ -12,17 +12,13 @@ Item {
 
     Label {
         id: updateCount
-
         x: Theme.paddingLarge
-        y: Theme.paddingMedium
         font.pixelSize: Theme.fontSizeHuge
     }
 
     Label {
         id: updateLabel
-
         x: Theme.paddingLarge
-        y: Theme.paddingMedium
         font.pixelSize: Theme.fontSizeExtraSmall
         maximumLineCount: 2
         wrapMode: Text.Wrap

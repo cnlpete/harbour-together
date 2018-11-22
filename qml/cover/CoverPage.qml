@@ -5,16 +5,23 @@ CoverBackground {
     id: root
 
     property int question_count: 0
+    property var question_activity: ({})
     property bool loading: false
 
     Column {
         width: parent.width
-        spacing: Theme.paddingLarge
+        spacing: Theme.paddingSmall
 
         CoverLabel {
             id: unreadLabel
             count: "0"
             label: "new\nquestions"
+        }
+
+        CoverLabel {
+            id: updatedLabel
+            count: "0"
+            label: "updated\nquestions"
         }
 
         Label {
@@ -41,7 +48,12 @@ CoverBackground {
         running: Qt.application.state === Qt.ApplicationInactive
         onRunningChanged: {
             if (Qt.application.state === Qt.ApplicationActive){
-                unreadLabel.count = '0';
+                unreadLabel.count = '0'
+                updatedLabel.count = '0'
+                question_count = 0
+                question_activity = {}
+            }else{
+                checkUpdates()
             }
         }
         onTriggered: checkUpdates()
@@ -59,7 +71,23 @@ CoverBackground {
                     question_count = data.count
                 }else if (data.count > question_count){
                     unreadLabel.count = data.count - question_count
-                    question_count = data.count
+                }
+
+                if (data.questions){
+                    var updated = 0
+                    for (var i=0; i<data.questions.length; i++){
+                        var q = data.questions[i]
+                        if (typeof question_activity[q.id] === "undefined"){
+                            question_activity[q.id] = q.last_activity
+                        }else if (question_activity[q.id] !== q.last_activity){
+                            updated++
+                        }
+                    }
+                    updatedLabel.count = updated
+
+                    if (!app.mainPage.viewChanged()){
+                        app.mainPage.replaceItems(data.questions)
+                    }
                 }
             }
         })

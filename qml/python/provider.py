@@ -3,6 +3,7 @@ import traceback
 import urllib.request
 import json
 import re
+import random
 from datetime import datetime, timezone, timedelta
 
 import markdown
@@ -16,6 +17,7 @@ TIMEZONE = timezone(timedelta(hours=2), 'Europe/Helsinki')
 
 class Provider:
     def __init__(self):
+        self.count = 1;
         pass
 
     def get_questions(self, params={}):
@@ -351,7 +353,9 @@ class Provider:
 
         output = {}
 
-        output['count'] = data['count']
+        #output['count'] = data['count']
+        self.count += 1
+        output['count'] = self.count
         output['questions'] = []
         for q in data['questions']:
             output['questions'].append(self.convert_question(q))
@@ -378,6 +382,7 @@ class Provider:
         item['view_count_label'] = self.convert_count(q['view_count'])
         item['added_at'] = q['added_at']
         item['added_at_label'] = timeago.format(datetime.fromtimestamp(int(q['added_at']), TIMEZONE), datetime.now(TIMEZONE))
+        item['last_activity'] = random.randrange(1,10,1)
 
         return item
 

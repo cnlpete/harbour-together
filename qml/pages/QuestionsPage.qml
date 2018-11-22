@@ -2,6 +2,7 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import lbee.together.core 1.0
 import "../components"
+import "../js/utils.js" as Utils
 
 Page {
     id: root
@@ -102,7 +103,7 @@ Page {
             onClicked: {
                 py.setHandler('markdown.finished', function(html){
                     model.body = html
-                    pageStack.push(Qt.resolvedUrl("QuestionPage.qml"), {question: model})
+                    pageStack.push(Qt.resolvedUrl("QuestionPage.qml"), {question: Utils.clone(model)})
                 })
                 py.call('app.main.markdown', [model.body])
             }
@@ -138,6 +139,9 @@ Page {
 
     Component.onCompleted: {
         py.setHandler('questions.finished', function(rs){
+            // If not check updates request
+            if (!loading) return
+
             pullDownMenu.busy = false
             pushUpMenu.busy = false
             loader.visible = false
@@ -212,5 +216,19 @@ Page {
                                                query: query,
                                                page: p
                                            }])
+    }
+
+    function viewChanged(){
+        return scope !== "all"
+                || settings.order !== Settings.Activity
+                || query !== ""
+                || tags !== ""
+    }
+
+    function replaceItems(items){
+        listModel.clear()
+        for (var i=0; i<items.length; i++){
+            listModel.append(items[i])
+        }
     }
 }

@@ -20,3 +20,11 @@ function parseQuestionId(url){
         return matches[1];
     }
 }
+
+function clone(object){
+    var newObj = {}
+    for (var i in object){
+        newObj[i] = object[i]
+    }
+    return newObj
+}
