@@ -29,6 +29,13 @@ Page {
             id: pullDownMenu
 
             MenuItem {
+                text: qsTr("Settings")
+                onClicked: {
+                    pageStack.push(Qt.resolvedUrl("SettingsPage.qml"))
+                }
+            }
+
+            MenuItem {
                 text: {
                     var label = qsTr("Sort by") + ": "
                     switch (settings.order){

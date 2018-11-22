@@ -86,6 +86,7 @@ Rectangle {
         }
 
         CommentMoreButton {
+            visible: false
             anchors.left: parent.left
             anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
             anchors.right: parent.right

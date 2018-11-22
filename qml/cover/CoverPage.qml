@@ -1,8 +1,11 @@
-import QtQuick 2.0
+import QtQuick 2.2
 import Sailfish.Silica 1.0
 
 CoverBackground {
     id: root
+
+    property int question_count: 0
+    property bool loading: false
 
     Column {
         width: parent.width
@@ -10,57 +13,44 @@ CoverBackground {
 
         CoverLabel {
             id: unreadLabel
-
-            count: "4"
-            label: "updated\nquestions"
-        }
-
-        Label {
-            id: statusLabel
-
-            x: Theme.paddingLarge
-            text: "Up to date"
-            fontSizeMode: Text.VerticalFit
-            font.pixelSize: Theme.fontSizeLarge
-            wrapMode: Text.Wrap
-            width: parent.width - Theme.paddingLarge
-            color: Theme.highlightColor
-            elide: Text.ElideNone
-            maximumLineCount: 3
-
-            Behavior on opacity { FadeAnimation { duration: 500 } }
-
-            Timer {
-                property bool keepVisible
-
-                repeat: true
-                interval: 500
-                running: app.loading && root.status === Cover.Active
-                onRunningChanged: if (!running) statusLabel.opacity = 1.0
-                onTriggered: {
-                    if (keepVisible) {
-                        keepVisible = false
-                    } else {
-                        keepVisible = statusLabel.opacity < 0.5
-                        statusLabel.opacity = (statusLabel.opacity > 0.5 ? 0.0 : 1.0)
-                    }
-                }
-            }
-        }
-
-        OpacityRampEffect {
-            offset: 0.5
-            sourceItem: statusLabel
-            enabled: statusLabel.implicitWidth > statusLabel.width - Theme.paddingLarge
+            count: "0"
+            label: "new\nquestions"
         }
     }
 
     CoverActionList {
         CoverAction {
             iconSource: "image://theme/icon-cover-sync"
-            onTriggered: {
-                app.refresh()
+            onTriggered: checkUpdates()
+        }
+    }
+
+    Timer {
+        repeat: true
+        interval: settings.updateDelay
+        running: Qt.application.state === Qt.ApplicationInactive
+        onRunningChanged: {
+            if (Qt.application.state === Qt.ApplicationActive){
+                unreadLabel.count = '0';
             }
         }
+        onTriggered: checkUpdates()
+    }
+
+    function checkUpdates(){
+        if (loading) return
+        loading = true
+
+        py.call('app.main.get_questions', [], function(data){
+            if (data && data.count){
+                loading = false
+                if (!question_count){
+                    question_count = data.count
+                }else if (data.count > question_count){
+                    unreadLabel.count = data.count - question_count
+                    question_count = data.count
+                }
+            }
+        })
     }
 }

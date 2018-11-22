@@ -351,6 +351,7 @@ class Provider:
 
         output = {}
 
+        output['count'] = data['count']
         output['questions'] = []
         for q in data['questions']:
             output['questions'].append(self.convert_question(q))

@@ -26,6 +26,15 @@ Page {
                 right: parent.right
             }
 
+            PullDownMenu {
+                MenuItem {
+                    text: qsTr("View in browser")
+                    onClicked: {
+                        Ultils.handleLink(question.url, true)
+                    }
+                }
+            }
+
             PageHeader {
                 title: question ? question.title : ""
             }
