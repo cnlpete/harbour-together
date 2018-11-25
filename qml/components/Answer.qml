@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import "../js/ultils.js" as Ultils
+import "../js/utils.js" as Utils
 
 Rectangle {
     property variant dataModel
@@ -56,7 +56,7 @@ Rectangle {
                     wrapMode: Text.WordWrap
                     font.pixelSize: Theme.fontSizeSmall
                     width: parent.width
-                    onLinkActivated: Ultils.handleLink(link)
+                    onLinkActivated: Utils.handleLink(link)
                 }
             }
         }
@@ -103,7 +103,7 @@ Rectangle {
             padding: Theme.paddingMedium
             onClicked: {
                 var url = questionModel.url + '#comments-for-answer-' + dataModel.id
-                Ultils.handleLink(url, true)
+                Utils.handleLink(url, true)
             }
         }
 

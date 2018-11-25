@@ -6,7 +6,6 @@ import "../js/utils.js" as Utils
 Page {
     property variant question
     property int question_id
-    property variant userModel
     property int p: 1
     property string sort: "votes"
     property bool loading: false
@@ -62,7 +61,7 @@ Page {
                 }
 
                 Row {
-                    visible: !userModel
+                    visible: !usersModel.count
                     anchors.horizontalCenter: parent.horizontalCenter
                     spacing: Theme.paddingSmall
                     height: busyIndicator.height + 2 * Theme.paddingLarge
@@ -98,26 +97,40 @@ Page {
 
                 Column {
                     width: parent.width
-                    visible: !!userModel
+                    visible: !!usersModel.count
 
                     Hr {
                         width: parent.width
                         paddingTop: Theme.horizontalPageMargin
                     }
 
-                    UserInfo {
-                        dataModel: userModel
-                        anchors {
-                            left: parent.left
-                            leftMargin: Theme.horizontalPageMargin
-                            right: parent.right
-                            rightMargin: Theme.horizontalPageMargin
+                    Repeater {
+                        model: ListModel {
+                            id: usersModel
                         }
-                    }
 
-                    Hr {
-                        width: parent.width
-                        paddingTop: Theme.horizontalPageMargin
+                        Rectangle {
+                            width: parent.width
+                            height: userInfo.height + Theme.horizontalPageMargin
+                            color: "transparent"
+
+                            UserInfo {
+                                id: userInfo
+                                dataModel: model
+                                anchors {
+                                    left: parent.left
+                                    leftMargin: Theme.horizontalPageMargin
+                                    right: parent.right
+                                    rightMargin: Theme.horizontalPageMargin
+                                }
+                            }
+
+                            Hr {
+                                width: parent.width
+                                anchors.top: userInfo.bottom
+                                paddingTop: Theme.horizontalPageMargin
+                            }
+                        }
                     }
 
                     Repeater {
@@ -240,8 +253,11 @@ Page {
                 }
             }
 
-            if (rs.user){
-                userModel = rs.user
+            if (rs.users){
+                for (var i=0; i<rs.users.length; i++){
+                    console.log(JSON.stringify(rs.users[i]))
+                    usersModel.append(rs.users[i])
+                }
             }
 
             if (rs.has_pages){

@@ -88,14 +88,14 @@ class Provider:
         # If requested page is not first page, it mean we only need load more answers
         if params['page'] == 1:
             # Parse user info
-            data['user'] = {}
+            data['users'] = []
             post_node = dom.select_one('div.post.question')
             if post_node is not None:
                 user_node = post_node.find('div', class_='post-update-info-container')
                 if user_node is not None:
-                    data['user'] = self.parse_user(user_node)
-                    data['user']['username'] = params['author']
-                    data['user']['is_author'] = True
+                    data['users'] = self.parse_user(user_node)
+                    #user['username'] = params['author']
+                    #user['is_author'] = True
 
             # Parse question's comments
             data['comments'] = []
@@ -159,7 +159,7 @@ class Provider:
                 # User info
                 answer_user_node = answer_node.find('div', class_='post-update-info-container')
                 if answer_user_node is not None:
-                    item['user'] = self.parse_user(answer_user_node)
+                    item['users'] = self.parse_user(answer_user_node)
 
                 # Vote count
                 item['vote_count'] = 0
@@ -269,38 +269,82 @@ class Provider:
         Parse user info in question or answer html
         """
 
-        data = {}
+        data = []
 
         if node is not None:
+            idx = 0
             for post_node in node.find_all('div', class_='post-update-info'):
+                item = {
+                    'username': '',
+                    'is_wiki': False,
+                    'asked': False, 'answered': False, 'updated': False,
+                    'data': '', "date_ago": '',
+                    'avatar_url': '',
+                    'reputation': '', 'badge1': '', 'badge2': '', 'badge3': ''
+                }
+
+                raw_text = post_node.get_text()
+                if raw_text.find('asked') != -1:
+                    item['asked'] = True
+                elif raw_text.find('answered') != -1:
+                    item['answered'] = True
+                elif raw_text.find('updated') != -1:
+                    item['updated'] = True
+
                 card_node = post_node.find('div', class_='user-card')
                 if card_node is not None:
                     date_node = post_node.find('abbr', class_='timeago')
-                    if 'date' not in data.keys() and date_node is not None:
-                        data['date'] = date_node.get('title')
-                        data['date_ago'] = timeago.format(self.parse_date(data['date']))
+                    if date_node is not None:
+                        item['date'] = date_node.get('title')
+                        item['date_ago'] = timeago.format(self.parse_date(item['date']))
 
                     avatar_node = card_node.find('img', class_='gravatar')
-                    if 'avatar_url' not in data.keys() and avatar_node is not None:
-                        data['avatar_url'] = self.get_gravatar(avatar_node.get('src'), 100)
+                    if avatar_node is not None:
+                        item['avatar_url'] = self.get_gravatar(avatar_node.get('src'), 100)
 
                     info_node = card_node.find('div', class_='user-info')
                     if info_node is not None:
                         name_node = info_node.find('a', recursive=False)
-                        if 'username' not in data.keys() and name_node is not None:
-                            data['username'] = name_node.get_text()
+                        if name_node is not None:
+                            item['username'] = name_node.get_text()
 
                         reputation_node = info_node.find('span', class_='reputation-score')
-                        if 'reputation' not in data.keys() and reputation_node is not None:
-                            data['reputation'] = reputation_node.get_text()
+                        if reputation_node is not None:
+                            item['reputation'] = reputation_node.get_text()
 
-                        if 'has_badge' not in data.keys():
-                            for i in range(1, 4):
-                                badge = info_node.find('span', class_='badge' + str(i))
-                                if badge is not None:
-                                    value = badge.find_next_sibling('span', class_='badgecount').get_text()
-                                    data['badge' + str(i)] = value
-                                    data['has_badge'] = True
+                        for i in range(1, 4):
+                            badge = info_node.find('span', class_='badge' + str(i))
+                            if badge is not None:
+                                value = badge.find_next_sibling('span', class_='badgecount').get_text()
+                                item['badge' + str(i)] = value
+                                item['has_badge'] = True
+                else:
+                    if item['updated']:
+                        date_node = post_node.find('abbr', class_='timeago')
+                        if date_node is not None:
+                            item['date'] = date_node.get('title')
+                            item['date_ago'] = timeago.format(self.parse_date(item['date']))
+
+                        if idx == 1:
+                            item['username'] = data[0]['username']
+                            item['avatar_url'] = data[0]['avatar_url']
+                            item['reputation'] = data[0]['reputation']
+                            item['has_badge'] = data[0]['has_badge']
+                            item['badge1'] = data[0]['badge1']
+                            item['badge2'] = data[0]['badge2']
+                            item['badge3'] = data[0]['badge3']
+                    else:
+                        wiki_img_node = post_node.find('img', alt='this post is marked as community wiki')
+                        if wiki_img_node is not None:
+                            item['is_wiki'] = True
+                            item['avatar_url'] = self.get_link(wiki_img_node.get('src'))
+                            date_node = post_node.find('abbr', class_='timeago')
+                            if date_node is not None:
+                                item['date'] = date_node.get('title')
+                                item['date_ago'] = timeago.format(self.parse_date(item['date']))
+
+                data.append(item)
+                idx += 1
 
         return data
 
@@ -381,6 +425,7 @@ class Provider:
         item['added_at'] = q['added_at']
         item['added_at_label'] = timeago.format(datetime.fromtimestamp(int(q['added_at']), TIMEZONE), datetime.now(TIMEZONE))
         item['last_activity'] = q['last_activity_at']
+        item['last_activity_label'] = timeago.format(datetime.fromtimestamp(int(q['last_activity_at']), TIMEZONE), datetime.now(TIMEZONE))
 
         return item
 

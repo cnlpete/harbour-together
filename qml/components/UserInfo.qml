@@ -47,7 +47,12 @@ Rectangle {
 
                 Label {
                     id: authorLbl
-                    text: dataModel && dataModel.username ? dataModel.username : ""
+                    text: {
+                        if (!dataModel) return ""
+                        if (dataModel.is_wiki) return qsTr("This post is a wiki")
+                        else if (dataModel.username) return dataModel.username
+                        else return ""
+                    }
                     color: Theme.primaryColor
                     font.pixelSize: Theme.fontSizeSmall
                 }
@@ -86,7 +91,13 @@ Rectangle {
 
                 Label {
                     id: isAuthorLbl
-                    text: dataModel && dataModel.is_author ? qsTr("asked") : qsTr("answered")
+                    text: {
+                        if (!dataModel) return ""
+                        if (dataModel.asked) return qsTr("asked")
+                        else if (dataModel.answered) return qsTr("answered")
+                        else if (dataModel.updated) return qsTr("updated")
+                        else return ""
+                    }
                     color: Theme.secondaryColor
                     font.pixelSize: Theme.fontSizeSmall
                     width: parent.width
