@@ -4,7 +4,6 @@ import "../js/utils.js" as Utils
 
 Rectangle {
     property variant dataModel
-    property variant userModel
     property variant questionModel
 
     height: container.height
@@ -14,12 +13,33 @@ Rectangle {
         id: container
         width: parent.width
 
-        UserInfo {
-            dataModel: userModel
-            anchors.left: parent.left
-            anchors.leftMargin: Theme.horizontalPageMargin
-            anchors.right: parent.right
-            anchors.rightMargin: Theme.horizontalPageMargin
+        Repeater {
+            model: ListModel {
+                id: usersModel
+            }
+
+            Rectangle {
+                width: parent.width
+                height: userInfo.height + Theme.horizontalPageMargin
+                color: "transparent"
+
+                UserInfo {
+                    id: userInfo
+                    dataModel: model
+                    anchors {
+                        left: parent.left
+                        leftMargin: Theme.horizontalPageMargin
+                        right: parent.right
+                        rightMargin: Theme.horizontalPageMargin
+                    }
+                }
+
+                Hr {
+                    width: parent.width
+                    anchors.top: userInfo.bottom
+                    paddingTop: Theme.horizontalPageMargin
+                }
+            }
         }
 
         Row {
@@ -121,8 +141,10 @@ Rectangle {
                     commentModel.append(dataModel.comments.get(i))
                 }
             }
-            if (dataModel.user){
-                userModel = dataModel.user
+            if (dataModel.users){
+                for (var i=0; i<dataModel.users.count; i++){
+                    usersModel.append(dataModel.users.get(i))
+                }
             }
         }
     }

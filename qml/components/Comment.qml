@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import "../js/ultils.js" as Ultils
+import "../js/utils.js" as Utils
 
 Rectangle {
     property variant dataModel
@@ -22,10 +22,10 @@ Rectangle {
             font.pixelSize: Theme.fontSizeExtraSmall
             wrapMode: Text.WordWrap
             anchors.left: parent.left
-            anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
+            anchors.leftMargin: 0
             anchors.right: parent.right
-            anchors.rightMargin: Theme.paddingMedium
-            onLinkActivated: Ultils.handleLink(link)
+            anchors.rightMargin: 0
+            onLinkActivated: Utils.handleLink(link)
         }
 
         Row {
@@ -44,14 +44,6 @@ Rectangle {
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeExtraSmall
             }
-        }
-
-        Hr {
-            width: parent.width
-            opacity: 0.4
-            paddingTop: Theme.paddingMedium
-            paddingBottom: Theme.paddingMedium
-            anchors.left: content.left
         }
     }
 }

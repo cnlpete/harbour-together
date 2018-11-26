@@ -46,7 +46,7 @@ CoverBackground {
     Timer {
         repeat: true
         interval: settings.updateDelay
-        running: Qt.application.state === Qt.ApplicationInactive
+        running: false//Qt.application.state === Qt.ApplicationInactive
         onRunningChanged: {
             if (Qt.application.state === Qt.ApplicationActive){
                 unreadLabel.count = '0'

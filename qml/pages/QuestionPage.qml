@@ -101,7 +101,6 @@ Page {
 
                     Hr {
                         width: parent.width
-                        paddingTop: Theme.horizontalPageMargin
                     }
 
                     Repeater {
@@ -128,7 +127,6 @@ Page {
                             Hr {
                                 width: parent.width
                                 anchors.top: userInfo.bottom
-                                paddingTop: Theme.horizontalPageMargin
                             }
                         }
                     }
@@ -140,18 +138,33 @@ Page {
 
                         Rectangle {
                             width: parent.width
-                            height: comment.height
+                            height: comment.height + commentHr.height
                             color: "transparent"
 
                             Comment {
                                 id: comment
                                 dataModel: model
-                                width: parent.width
+                                anchors.left: parent.left
+                                anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
+                                anchors.right: parent.right
+                                anchors.rightMargin: Theme.paddingMedium
+
+                                Hr {
+                                    id: commentHr
+                                    width: parent.width
+                                    opacity: 0.4
+                                    paddingTop: Theme.paddingMedium
+                                    paddingBottom: Theme.paddingMedium
+                                    anchors.top: comment.bottom
+                                    anchors.left: comment.left
+                                    visible: index < commentModel.count - 1
+                                }
                             }
                         }
                     }
 
                     CommentButton {
+                        visible: false
                         anchors.left: parent.left
                         anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
                         anchors.right: parent.right
@@ -164,8 +177,7 @@ Page {
 
                     Hr {
                         width: parent.width
-                        paddingTop: Theme.paddingMedium
-                        paddingBottom: 2 * Theme.paddingMedium
+                        paddingBottom: Theme.paddingLarge
                     }
 
                     Label {
@@ -180,7 +192,7 @@ Page {
 
                     Hr {
                         width: parent.width
-                        paddingTop: 2 * Theme.paddingLarge
+                        paddingTop: Theme.paddingLarge
                     }
 
                     Repeater {

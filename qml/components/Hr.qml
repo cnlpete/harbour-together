@@ -15,6 +15,14 @@ Rectangle {
         color: Theme.primaryColor
         anchors.topMargin: paddingTop
         anchors.bottomMargin: paddingBottom
-        anchors.verticalCenter: parent.verticalCenter
+        anchors.verticalCenter: {
+            if (paddingTop > 0 && paddingBottom === 0){
+                return parent.bottom
+            }else if (paddingTop === 0 && paddingBottom > 0){
+                return parent.top
+            }else{
+                return parent.verticalCenter
+            }
+        }
     }
 }
