@@ -14,6 +14,13 @@ TARGET = harbour-together
 
 CONFIG += sailfishapp
 
+# Write version file
+VERSION_H = \
+"$${LITERAL_HASH}ifndef APP_VERSION" \
+"$${LITERAL_HASH}   define APP_VERSION \"$$APP_VERSION\"" \
+"$${LITERAL_HASH}endif"
+write_file($$$$OUT_PWD/version.h, VERSION_H)
+
 HEADERS += \
     src/settings.h
 
@@ -29,7 +36,8 @@ DISTFILES += qml/*.qml \
     qml/python/*.py \
     qml/js/*.js \
     qml/fonts/*.ttf \
-    qml/fonts/LICENSE.txt
+    qml/fonts/LICENSE.txt \
+    LICENSE
 
 SAILFISHAPP_ICONS = 86x86 108x108 128x128
 

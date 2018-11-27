@@ -12,8 +12,8 @@ Name:       harbour-together
 %{!?qtc_qmake5:%define qtc_qmake5 %qmake5}
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
-Summary:    Unoffical Jolla Together Mobile App
-Version:    0.1
+Summary:    Unoffical Together.Jolla.Com client
+Version:    0.1.0
 Release:    1
 Group:      Qt/Qt
 License:    LICENSE
@@ -29,7 +29,7 @@ BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  desktop-file-utils
 
 %description
-Short description of my Sailfish OS Application
+Unoffical native Together.Jolla.Com client for Sailfish OS
 
 
 %prep
@@ -42,7 +42,8 @@ Short description of my Sailfish OS Application
 # >> build pre
 # << build pre
 
-%qtc_qmake5 
+%qtc_qmake5  \
+    APP_VERSION=%{version}
 
 %qtc_make %{?_smp_mflags}
 

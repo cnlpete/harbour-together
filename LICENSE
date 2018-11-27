@@ -1,4 +1,3 @@
-"""
 Copyright (C) 2018 Nguyen Long.
 All rights reserved.
 
@@ -19,38 +18,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-"""
-
-try:
-    import pyotherside
-    IS_MOBILE = True
-except ImportError:
-    IS_MOBILE = False
-
-class Tools:
-    @staticmethod
-    def log(str):
-        """
-        Print log to console
-        """
-
-        Tools.send('log', str)
-
-    @staticmethod
-    def error(str):
-        """
-        Send error string to QML to show on banner
-        """
-
-        Tools.send('error', str)
-
-    @staticmethod
-    def send(event, msg=None):
-        """
-        Send data to QML
-        """
-
-        if IS_MOBILE:
-            pyotherside.send(event, msg)
-        else:
-            print(event + ': ' + msg)

@@ -258,7 +258,6 @@ Page {
 
             if (rs.users){
                 for (var i=0; i<rs.users.length; i++){
-                    console.log(JSON.stringify(rs.users[i]))
                     usersModel.append(rs.users[i])
                 }
             }
