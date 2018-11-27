@@ -8,6 +8,7 @@ Label {
     anchors.rightMargin: Theme.horizontalPageMargin
     horizontalAlignment: Qt.AlignHCenter
     color: Theme.primaryColor
+    linkColor: Theme.highlightColor
     font.pixelSize: Theme.fontSizeSmall
     wrapMode: Text.WordWrap
 }

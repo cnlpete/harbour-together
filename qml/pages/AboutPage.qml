@@ -16,7 +16,12 @@ Page {
             spacing: Theme.paddingMedium
 
             PageHeader {
-                title: qsTr("About Together")
+                title: qsTr("About")
+            }
+
+            AboutLabel {
+                text: "Together"
+                font.pixelSize: Theme.fontSizeLarge
             }
 
             AboutLabel {
