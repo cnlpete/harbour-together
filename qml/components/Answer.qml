@@ -20,7 +20,7 @@ Rectangle {
 
             Rectangle {
                 width: parent.width
-                height: userInfo.height + Theme.horizontalPageMargin
+                height: userInfo.height + userInfoHr.height
                 color: "transparent"
 
                 UserInfo {
@@ -35,9 +35,9 @@ Rectangle {
                 }
 
                 Hr {
+                    id: userInfoHr
                     width: parent.width
                     anchors.top: userInfo.bottom
-                    paddingTop: Theme.horizontalPageMargin
                 }
             }
         }
@@ -47,7 +47,7 @@ Rectangle {
 
             Column {
                 id: leftCol
-                width: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
+                width: Theme.horizontalPageMargin + Theme.itemSizeSmall
                 height: 1
 
                 Label {
@@ -65,7 +65,7 @@ Rectangle {
 
             Column {
                 id: rightCol
-                width: parent.width - leftCol.width// - Theme.paddingMedium - Theme.horizontalPageMargin
+                width: parent.width - leftCol.width
 
                 Label {
                     id: text
@@ -83,24 +83,36 @@ Rectangle {
 
         Hr {
             width: parent.width
-            paddingTop: Theme.paddingMedium
-            paddingBottom: Theme.paddingMedium
         }
 
         Repeater {
             model: ListModel {
-                id: commentModel
+                id: commentsModel
             }
 
             Rectangle {
                 width: parent.width
-                height: comment.height
+                height: comments.height + commentsHr.height
                 color: "transparent"
 
                 Comment {
-                    id: comment
+                    id: comments
                     dataModel: model
-                    width: parent.width
+                    anchors.left: parent.left
+                    anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
+                    anchors.right: parent.right
+                    anchors.rightMargin: Theme.paddingMedium
+
+                    Hr {
+                        id: commentsHr
+                        opacity: 0.4
+                        paddingTop: Theme.paddingMedium
+                        paddingBottom: Theme.paddingMedium
+                        anchors.top: parent.bottom
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        visible: index < commentsModel.count - 1
+                    }
                 }
             }
         }
@@ -117,20 +129,16 @@ Rectangle {
         }
 
         CommentButton {
+            label: qsTr("no comment")
             anchors.left: parent.left
             anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
             anchors.right: parent.right
-            padding: Theme.paddingMedium
-            onClicked: {
-                var url = questionModel.url + '#comments-for-answer-' + dataModel.id
-                Utils.handleLink(url, true)
-            }
+            padding: Theme.paddingLarge
+            visible: !commentsModel.count
         }
 
         Hr {
             width: parent.width
-            paddingTop: Theme.paddingMedium
-            paddingBottom: Theme.paddingMedium
         }
     }
 
@@ -138,7 +146,7 @@ Rectangle {
         if (dataModel){
             if (dataModel.comments){
                 for (var i=0; i<dataModel.comments.count; i++){
-                    commentModel.append(dataModel.comments.get(i))
+                    commentsModel.append(dataModel.comments.get(i))
                 }
             }
             if (dataModel.users){

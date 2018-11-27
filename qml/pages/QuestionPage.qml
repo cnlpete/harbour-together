@@ -27,6 +27,10 @@ Page {
 
             PullDownMenu {
                 MenuItem {
+                    text: qsTr("Tags")
+                }
+
+                MenuItem {
                     text: qsTr("View in browser")
                     onClicked: {
                         Utils.handleLink(question.url, true)
@@ -57,7 +61,11 @@ Page {
                         right: parent.right
                         rightMargin: Theme.paddingMedium
                     }
-                    onLinkActivated: Utils.handleLink(link)
+                    onLinkActivated: {
+                        if (!loading){
+                            Utils.handleLink(link)
+                        }
+                    }
                 }
 
                 Row {
@@ -110,7 +118,7 @@ Page {
 
                         Rectangle {
                             width: parent.width
-                            height: userInfo.height + Theme.horizontalPageMargin
+                            height: userInfo.height + userInfoHr.height
                             color: "transparent"
 
                             UserInfo {
@@ -125,6 +133,7 @@ Page {
                             }
 
                             Hr {
+                                id: userInfoHr
                                 width: parent.width
                                 anchors.top: userInfo.bottom
                             }
@@ -133,16 +142,16 @@ Page {
 
                     Repeater {
                         model: ListModel {
-                            id: commentModel
+                            id: commentsModel
                         }
 
                         Rectangle {
                             width: parent.width
-                            height: comment.height + commentHr.height
+                            height: comments.height + commentsHr.height
                             color: "transparent"
 
                             Comment {
-                                id: comment
+                                id: comments
                                 dataModel: model
                                 anchors.left: parent.left
                                 anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
@@ -150,29 +159,26 @@ Page {
                                 anchors.rightMargin: Theme.paddingMedium
 
                                 Hr {
-                                    id: commentHr
-                                    width: parent.width
+                                    id: commentsHr
                                     opacity: 0.4
                                     paddingTop: Theme.paddingMedium
                                     paddingBottom: Theme.paddingMedium
-                                    anchors.top: comment.bottom
-                                    anchors.left: comment.left
-                                    visible: index < commentModel.count - 1
+                                    anchors.top: parent.bottom
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    visible: index < commentsModel.count - 1
                                 }
                             }
                         }
                     }
 
                     CommentButton {
-                        visible: false
+                        label: qsTr("no comment")
                         anchors.left: parent.left
                         anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
                         anchors.right: parent.right
-                        padding: Theme.paddingMedium
-                        onClicked: {
-                            var url = question.url + '#comments-for-question-' + question.id
-                            Utils.handleLink(url, true)
-                        }
+                        padding: Theme.paddingLarge
+                        visible: !commentsModel.count
                     }
 
                     Hr {
@@ -213,21 +219,6 @@ Page {
                             }
                         }
                     }
-
-                    AnswerButton {
-                        width: parent.width
-                        padding: Theme.paddingMedium
-                        onClicked: {
-                            var url = question.url + "#fmanswer"
-                            Utils.handleLink(url, true)
-                        }
-                    }
-
-                    Hr {
-                        width: parent.width
-                        paddingTop: Theme.paddingMedium
-                        opacity: 0
-                    }
                 }
             }
         }
@@ -255,7 +246,7 @@ Page {
         py.setHandler('question.finished', function(rs){
             if (rs.comments){
                 for (var i=0; i<rs.comments.length; i++){
-                    commentModel.append(rs.comments[i])
+                    commentsModel.append(rs.comments[i])
                 }
             }
 

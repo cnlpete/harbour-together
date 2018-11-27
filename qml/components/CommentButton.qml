@@ -5,6 +5,7 @@ Rectangle {
     id: root
 
     property int padding: 0
+    property string label: ""
 
     signal clicked()
 
@@ -24,7 +25,7 @@ Rectangle {
         }
 
         Label {
-            text: qsTr("add a comment")
+            text: label
             color: mouse.pressed ? Theme.secondaryHighlightColor : Theme.secondaryColor
             font.pixelSize: Theme.fontSizeExtraSmall
             width: parent.width
