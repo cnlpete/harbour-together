@@ -38,8 +38,14 @@ Rectangle {
                     id: userInfoHr
                     width: parent.width
                     anchors.top: userInfo.bottom
+                    visible: index < usersModel.count - 1
                 }
             }
+        }
+
+        Hr {
+            width: parent.width
+            paddingBottom: Theme.paddingMedium
         }
 
         Row {
@@ -70,7 +76,6 @@ Rectangle {
                 Label {
                     id: text
                     text: dataModel.content
-                    //textFormat: Text.RichText
                     color: Theme.primaryColor
                     linkColor: Theme.highlightColor
                     wrapMode: Text.WordWrap
@@ -83,6 +88,7 @@ Rectangle {
 
         Hr {
             width: parent.width
+            paddingBottom: Theme.paddingMedium
         }
 
         Repeater {
@@ -92,7 +98,7 @@ Rectangle {
 
             Rectangle {
                 width: parent.width
-                height: comments.height + commentsHr.height
+                height: comments.height + (commentsHr.visible ? commentsHr.height : 0)
                 color: "transparent"
 
                 Comment {
@@ -122,7 +128,6 @@ Rectangle {
             anchors.left: parent.left
             anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
             anchors.right: parent.right
-            padding: Theme.paddingMedium
             onClicked: {
                 console.log("more")
             }
@@ -133,12 +138,13 @@ Rectangle {
             anchors.left: parent.left
             anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
             anchors.right: parent.right
-            padding: Theme.paddingLarge
+            padding: Theme.paddingMedium
             visible: !commentsModel.count
         }
 
         Hr {
             width: parent.width
+            paddingTop: Theme.paddingMedium
         }
     }
 

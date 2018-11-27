@@ -136,8 +136,14 @@ Page {
                                 id: userInfoHr
                                 width: parent.width
                                 anchors.top: userInfo.bottom
+                                visible: index < usersModel.count - 1
                             }
                         }
+                    }
+
+                    Hr {
+                        width: parent.width
+                        paddingBottom: Theme.paddingMedium
                     }
 
                     Repeater {
@@ -147,7 +153,7 @@ Page {
 
                         Rectangle {
                             width: parent.width
-                            height: comments.height + commentsHr.height
+                            height: comments.height + (commentsHr.visible ? commentsHr.height : 0)
                             color: "transparent"
 
                             Comment {
@@ -177,13 +183,14 @@ Page {
                         anchors.left: parent.left
                         anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
                         anchors.right: parent.right
-                        padding: Theme.paddingLarge
+                        padding: Theme.paddingMedium
                         visible: !commentsModel.count
                     }
 
                     Hr {
                         width: parent.width
                         paddingBottom: Theme.paddingLarge
+                        paddingTop: Theme.paddingMedium
                     }
 
                     Label {
