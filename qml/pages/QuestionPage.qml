@@ -27,10 +27,6 @@ Page {
 
             PullDownMenu {
                 MenuItem {
-                    text: qsTr("Tags")
-                }
-
-                MenuItem {
                     text: qsTr("View in browser")
                     onClicked: {
                         Utils.handleLink(question.url, true)

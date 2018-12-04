@@ -82,6 +82,38 @@ class Provider:
             url = BASE_URL + 'api/v1/questions/' + str(id)
             return self.request('get', url, '_parse_question_json', params)
 
+    def get_user(self, user):
+        """
+        Get user profile from website
+        """
+
+        url = BASE_URL + 'users/' + user['id'] + '/' + user['username'].lower()
+        return self.request('get', url, '_parse_user_profile', user)
+
+    def _parse_user_profile(self, html, user):
+        """
+        Parse user profile from html response
+        """
+
+        dom = BeautifulSoup(html, 'html.parser')
+        data = {}
+
+        avartar_node = dom.find('img', class_='gravatar')
+        if avartar_node is not None:
+            data['avartar_url'] = self.get_link(avartar_node.get('src'))
+
+        user_details_table = dom.find('table', class_='user-details')
+        if user_details_table is not None:
+            idx = 0
+            for tr in user_details_table.find_all('tr'):
+                idx += 1
+                if idx == 2:
+                    created_node = tr.find('abbr', class_='timeago')
+                    if created_node is not None:
+                        data['created'] = created_node.get('title')
+
+        return data
+
     def _parse_question_json(self, text, params={}):
         """
         Parse question details from API response
@@ -300,7 +332,7 @@ class Provider:
                     'username': '',
                     'is_wiki': False,
                     'asked': False, 'answered': False, 'updated': False,
-                    'data': '', "date_ago": '',
+                    'date': '', "date_ago": '',
                     'avatar_url': '',
                     'reputation': '', 'badge1': '', 'badge2': '', 'badge3': ''
                 }
@@ -372,7 +404,7 @@ class Provider:
 
     def parse_date(self, date):
         """
-        Return datetime format supportted by "timeago" lib, strip timezone data
+        Return datetime format supportted by "timeago" module, strip timezone data
         Ex: 2018-03-09 09:45:54 +0200 => 2018-03-09 09:45:54
         """
 

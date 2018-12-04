@@ -85,4 +85,18 @@ class App:
             Tools.send('markdown.error')
             Tools.error(e.args[0])
 
+    def get_user(self, user):
+        """
+        Get user profile
+        """
+
+        try:
+            data = self.provider.get_user(user)
+            Tools.send('user.finished', data)
+            return data
+        except Exception as e:
+            Tools.log(traceback.format_exc())
+            Tools.send('user.error')
+            Tools.error(e.args[0])
+
 main = App()

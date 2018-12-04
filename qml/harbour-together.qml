@@ -15,7 +15,7 @@ ApplicationWindow {
     allowedOrientations: defaultAllowedOrientations
 
     Component.onCompleted: {
-        mainPage = pageStack.push(Qt.resolvedUrl("pages/QuestionsPage.qml"))
+        mainPage = pageStack.push(Qt.resolvedUrl("pages/UserPage.qml"))
     }
 
     FontLoader {
