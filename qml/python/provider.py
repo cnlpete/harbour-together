@@ -79,7 +79,7 @@ class Provider:
         """
 
         if id:
-            url = BASE_URL + 'api/v1/questions/' + str(id)
+            url = BASE_URL + 'api/v1/questions/' + str(int(id))
             return self.request('get', url, '_parse_question_json', params)
 
     def get_user(self, user):
@@ -87,7 +87,11 @@ class Provider:
         Get user profile from website
         """
 
-        url = BASE_URL + 'users/' + user['id'] + '/' + user['username'].lower()
+        if 'info_url' in user:
+            url = user['info_url']
+        else:
+            url = BASE_URL + 'users/' + user['id'] + '/' + user['username'].lower()
+
         return self.request('get', url, '_parse_user_profile', user)
 
     def _parse_user_profile(self, html, user):
@@ -102,17 +106,66 @@ class Provider:
         if avartar_node is not None:
             data['avartar_url'] = self.get_link(avartar_node.get('src'))
 
+        score_node = dom.find('div', class_='scoreNumber')
+        if score_node is not None:
+            data['score'] = score_node.get_text()
+
         user_details_table = dom.find('table', class_='user-details')
         if user_details_table is not None:
-            idx = 0
             for tr in user_details_table.find_all('tr'):
-                idx += 1
-                if idx == 2:
+                raw_text = tr.get_text()
+                if raw_text.find('member since') != -1:
                     created_node = tr.find('abbr', class_='timeago')
                     if created_node is not None:
-                        data['created'] = created_node.get('title')
+                        created_datetime = self._parse_datetime(created_node.get('title'))
+                        data['created'] = created_datetime.strftime('%Y-%m-%d')
+                elif raw_text.find('last seen') != -1:
+                    last_seen_node = tr.find('abbr', class_='timeago')
+                    if last_seen_node is not None:
+                        last_seen_datetime = self._parse_datetime(last_seen_node.get('title'))
+                        data['last_seen'] = last_seen_datetime.strftime('%Y-%m-%d')
+
+        questions_a_node = dom.find('a', attrs={'name': 'questions'})
+        if questions_a_node is not None:
+            questions_h2_node = questions_a_node.find_next('h2')
+            if questions_h2_node.name == 'h2':
+                questions_count_node = questions_h2_node.find('span', class_='count')
+                if questions_count_node is not None:
+                    data['questions_count'] = int(questions_count_node.get_text())
+
+        data['questions'] = []
+        for question_node in dom.find_all('div', class_='short-summary'):
+            question = self._parse_question_html(question_node)
+            if question:
+                data['questions'].append(question)
 
         return data
+
+    def _parse_question_html(self, node):
+        """
+        Parse question data from DOM node
+        """
+
+        if node is None:
+            return None
+
+        data = {}
+        data['id'] = int(node.get('id').replace('question-', ''))
+        h2_node = node.find('h2')
+        if h2_node is not None:
+            a_node = h2_node.find('a')
+            if a_node is not None:
+                data['title'] = a_node.get_text()
+                data['url'] = self.get_link(a_node.get('href'))
+
+        return data
+
+    def _parse_datetime(self, string):
+        """
+        Parse datetime string. Ex: 2014-11-22 13:44:23 +0200
+        """
+
+        return datetime.strptime(' '.join(string.split(' ')[:-1]), '%Y-%m-%d %H:%M:%S')
 
     def _parse_question_json(self, text, params={}):
         """
@@ -330,6 +383,7 @@ class Provider:
             for post_node in node.find_all('div', class_='post-update-info'):
                 item = {
                     'username': '',
+                    'info_url': '',
                     'is_wiki': False,
                     'asked': False, 'answered': False, 'updated': False,
                     'date': '', "date_ago": '',
@@ -361,6 +415,7 @@ class Provider:
                         name_node = info_node.find('a', recursive=False)
                         if name_node is not None:
                             item['username'] = name_node.get_text()
+                            item['info_url'] = self.get_link(name_node.get('href'))
 
                         reputation_node = info_node.find('span', class_='reputation-score')
                         if reputation_node is not None:
@@ -382,6 +437,7 @@ class Provider:
                         if idx == 1:
                             item['username'] = data[0]['username']
                             item['avatar_url'] = data[0]['avatar_url']
+                            item['info_url'] = data[0]['info_url']
                             item['reputation'] = data[0]['reputation']
                             item['has_badge'] = data[0]['has_badge']
                             item['badge1'] = data[0]['badge1']

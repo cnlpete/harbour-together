@@ -4,7 +4,7 @@ import Sailfish.Silica 1.0
 Rectangle {
     id: root
 
-    property variant dataModel
+    property variant dataModel: ({})
 
     height: row.height
     color: "transparent"
@@ -34,6 +34,14 @@ Rectangle {
                 color: "black"
                 opacity: 0.4
                 visible: !avatarImg.visible
+            }
+
+            MouseArea {
+                visible: dataModel.info_url
+                anchors.fill: parent
+                onClicked: {
+                    pageStack.push(Qt.resolvedUrl("../pages/UserPage.qml"), {user: {username: dataModel.username, info_url: dataModel.info_url}})
+                }
             }
         }
 

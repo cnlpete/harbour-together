@@ -1,9 +1,14 @@
 function handleLink(link, forceExternal) {
+    if (!link){
+        console.log('Link is empty');
+        return;
+    }
+
     if (!forceExternal && link.indexOf("together.jolla.com/question/") > -1){
         console.log("Internal link: " + link);
         var id = parseQuestionId(link);
         if (id){
-            pageStack.push(Qt.resolvedUrl("../pages/QuestionPage.qml"), {question_id: id});
+            pageStack.push(Qt.resolvedUrl("../pages/QuestionPage.qml"), {question: {id: id}});
         }else{
             console.log("Could not found question ID");
         }

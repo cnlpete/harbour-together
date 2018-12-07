@@ -4,8 +4,7 @@ import "../components"
 import "../js/utils.js" as Utils
 
 Page {
-    property variant question
-    property int question_id
+    property variant question: ({})
     property int p: 1
     property string sort: "votes"
     property bool loading: false
@@ -35,7 +34,7 @@ Page {
             }
 
             PageHeader {
-                title: question ? question.title : ""
+                title: question.title || ""
             }
 
             Column {
@@ -45,7 +44,7 @@ Page {
                 }
 
                 Label {
-                    text: question ? question.body : ""
+                    text: question.body || ""
                     color: Theme.primaryColor
                     wrapMode: Text.WordWrap
                     font.pixelSize: Theme.fontSizeSmall
@@ -87,9 +86,9 @@ Page {
 
                     Label {
                         text: {
-                            if (question){
+                            if (question.body){
                                 busyIndicator.visible ? qsTr("Loading anwsers") + "..." : qsTr("Failed")
-                            }else if(question_id){
+                            }else if(question.id){
                                 busyIndicator.visible ? qsTr("Loading question") + "..." : qsTr("Failed")
                             }
                         }
@@ -291,7 +290,7 @@ Page {
     }
 
     function refresh(){
-        if (question){
+        if (question.body){
             loading = true
             py.call('app.main.get_question', [{
                                                   id: question.id,
@@ -300,8 +299,8 @@ Page {
                                                   page: p,
                                                   sort: sort
                                               }])
-        }else if (question_id){
-            py.call("app.main.get_question_by_id", [question_id])
+        }else if (question.id){
+            py.call("app.main.get_question_by_id", [question.id])
         }
     }
 }
