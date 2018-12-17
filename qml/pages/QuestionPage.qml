@@ -245,42 +245,6 @@ Page {
     }
 
     Component.onCompleted: {
-        py.setHandler('question.finished', function(rs){
-            if (rs.comments){
-                for (var i=0; i<rs.comments.length; i++){
-                    commentsModel.append(rs.comments[i])
-                }
-            }
-
-            if (rs.answers){
-                for (var i=0; i<rs.answers.length; i++){
-                    answerModel.append(rs.answers[i])
-                }
-            }
-
-            if (rs.users){
-                for (var i=0; i<rs.users.length; i++){
-                    usersModel.append(rs.users[i])
-                }
-            }
-
-            if (rs.has_pages){
-                pushUpMenu.visible = true
-            }else{
-                pushUpMenu.visible = false
-            }
-
-            pushUpMenu.busy = false
-            loading = false
-        })
-
-        py.setHandler('question.id.finished', function(rs){
-            if (rs){
-                question = rs
-                refresh()
-            }
-        })
-
         py.setHandler('question.error', function(){
             busyIndicator.visible = false
             loading = false
@@ -292,15 +256,49 @@ Page {
     function refresh(){
         if (question.body){
             loading = true
-            py.call('app.main.get_question', [{
-                                                  id: question.id,
-                                                  url: question.url,
-                                                  author: question.author,
-                                                  page: p,
-                                                  sort: sort
-                                              }])
+            py.call('app.main.get_question',
+                    [{
+                         id: question.id,
+                         url: question.url,
+                         author: question.author,
+                         page: p,
+                         sort: sort
+                     }],
+                    function(rs){
+                        if (rs.comments){
+                            for (var i=0; i<rs.comments.length; i++){
+                                commentsModel.append(rs.comments[i])
+                            }
+                        }
+
+                        if (rs.answers){
+                            for (var i=0; i<rs.answers.length; i++){
+                                answerModel.append(rs.answers[i])
+                            }
+                        }
+
+                        if (rs.users){
+                            for (var i=0; i<rs.users.length; i++){
+                                usersModel.append(rs.users[i])
+                            }
+                        }
+
+                        if (rs.has_pages){
+                            pushUpMenu.visible = true
+                        }else{
+                            pushUpMenu.visible = false
+                        }
+
+                        pushUpMenu.busy = false
+                        loading = false
+                    })
         }else if (question.id){
-            py.call("app.main.get_question_by_id", [question.id])
+            py.call("app.main.get_question_by_id", [question.id], function(rs){
+                if (rs){
+                    question = rs
+                    refresh()
+                }
+            })
         }
     }
 }

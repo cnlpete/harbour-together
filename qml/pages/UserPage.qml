@@ -100,24 +100,7 @@ Page {
                     id: questionsModel
                 }
 
-                delegate: BackgroundItem {
-                    id: delegate
-                    width: questionsListView.width
-                    height: questionTitle.height + 2 * Theme.paddingMedium
-
-                    Label {
-                        id: questionTitle
-                        text: title
-                        anchors.left: parent.left
-                        anchors.leftMargin: Theme.horizontalPageMargin
-                        anchors.right: parent.right
-                        anchors.rightMargin: Theme.paddingMedium
-                        anchors.verticalCenter: parent.verticalCenter
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: Theme.fontSizeSmall
-                        color: delegate.highlighted ? Theme.highlightColor : Theme.primaryColor
-                    }
-
+                delegate: QuestionDelegate {
                     onClicked: {
                         pageStack.push(Qt.resolvedUrl("QuestionPage.qml"), {question: model})
                     }
@@ -132,31 +115,28 @@ Page {
         id: busy
         loading: root.loading
         hasError: root.hasError
-        text: qsTr("Loading user %1").arg(user.username)
+        text: qsTr("\uf007 %1").arg(user.username)
         anchors.fill: parent
     }
 
     Component.onCompleted: {
-        py.setHandler('user.finished', function(rs){
-            //console.log(JSON.stringify(rs))
-            loading = false
-
-            avartar.source = rs.avartar_url
-            created.value = rs.created
-            last_seen.value = rs.last_seen
-            score.value = rs.score
-            question_section.count = rs.questions_count
-            for (var i=0; i<rs.questions.length; i++){
-                questionsModel.append(rs.questions[i])
-            }
-        })
-
         py.setHandler('user.error', function(){
             loading = false
             hasError = true
             busy.text = qsTr("Could not load data")
         })
 
-        py.call('app.main.get_user', [user])
+        py.call('app.main.get_user', [user], function(rs){
+            loading = false
+
+            avartar.source = rs.avartar_url
+            created.value = rs.created
+            last_seen.value = rs.last_seen_label
+            score.value = rs.score
+            question_section.count = rs.questions_count
+            for (var i=0; i<rs.questions.length; i++){
+                questionsModel.append(rs.questions[i])
+            }
+        })
     }
 }

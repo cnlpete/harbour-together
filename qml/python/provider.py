@@ -124,6 +124,7 @@ class Provider:
                     if last_seen_node is not None:
                         last_seen_datetime = self._parse_datetime(last_seen_node.get('title'))
                         data['last_seen'] = last_seen_datetime.strftime('%Y-%m-%d')
+                        data['last_seen_label'] = timeago.format(last_seen_datetime, datetime.now(TIMEZONE))
 
         questions_a_node = dom.find('a', attrs={'name': 'questions'})
         if questions_a_node is not None:
@@ -158,6 +159,21 @@ class Provider:
                 data['title'] = a_node.get_text()
                 data['url'] = self.get_link(a_node.get('href'))
 
+        view_count_node = node.find('div', class_='views')
+        if view_count_node is not None:
+            view_count_value = view_count_node.find('span', class_='item-count').get_text()
+            data['view_count_label'] = '0' if view_count_value == 'no' else view_count_value
+
+        score_count_node = node.find('div', class_='votes')
+        if score_count_node is not None:
+            score_count_value = score_count_node.find('span', class_='item-count').get_text()
+            data['score_label'] = '0' if score_count_value == 'no' else score_count_value
+
+        answer_count_node = node.find('div', class_='answers')
+        if answer_count_node is not None:
+            answer_count_value = answer_count_node.find('span', class_='item-count').get_text()
+            data['answer_count_label'] = '0' if answer_count_value == 'no' else answer_count_value
+
         return data
 
     def _parse_datetime(self, string):
@@ -165,7 +181,7 @@ class Provider:
         Parse datetime string. Ex: 2014-11-22 13:44:23 +0200
         """
 
-        return datetime.strptime(' '.join(string.split(' ')[:-1]), '%Y-%m-%d %H:%M:%S')
+        return datetime.strptime(string, '%Y-%m-%d %H:%M:%S %z')
 
     def _parse_question_json(self, text, params={}):
         """
@@ -361,9 +377,10 @@ class Provider:
                     for p in comment_body_node.find_all(recursive=False):
                         if 'class' in p.attrs and 'author' in p['class']:
                             item['author'] = p.get_text()
+                            item['author_url'] = self.get_link(p.get('href'))
                         elif 'class' in p.attrs and 'age' in p['class']:
                             item['date'] = p.abbr['title']
-                            item['date_ago'] = timeago.format(self.parse_date(item['date']))
+                            item['date_ago'] = timeago.format(self._parse_datetime(item['date']), datetime.now(TIMEZONE))
                         elif p.name == 'p' or p.name == 'del':
                             item['content'] += self.parse_content(p)
 
@@ -404,7 +421,7 @@ class Provider:
                     date_node = post_node.find('abbr', class_='timeago')
                     if date_node is not None:
                         item['date'] = date_node.get('title')
-                        item['date_ago'] = timeago.format(self.parse_date(item['date']))
+                        item['date_ago'] = timeago.format(self._parse_datetime(item['date']), datetime.now(TIMEZONE))
 
                     avatar_node = card_node.find('img', class_='gravatar')
                     if avatar_node is not None:
@@ -432,7 +449,7 @@ class Provider:
                         date_node = post_node.find('abbr', class_='timeago')
                         if date_node is not None:
                             item['date'] = date_node.get('title')
-                            item['date_ago'] = timeago.format(self.parse_date(item['date']))
+                            item['date_ago'] = timeago.format(self._parse_datetime(item['date']), datetime.now(TIMEZONE))
 
                         if idx == 1:
                             item['username'] = data[0]['username']
@@ -451,20 +468,12 @@ class Provider:
                             date_node = post_node.find('abbr', class_='timeago')
                             if date_node is not None:
                                 item['date'] = date_node.get('title')
-                                item['date_ago'] = timeago.format(self.parse_date(item['date']))
+                                item['date_ago'] = timeago.format(self._parse_datetime(item['date']), datetime.now(TIMEZONE))
 
                 data.append(item)
                 idx += 1
 
         return data
-
-    def parse_date(self, date):
-        """
-        Return datetime format supportted by "timeago" module, strip timezone data
-        Ex: 2018-03-09 09:45:54 +0200 => 2018-03-09 09:45:54
-        """
-
-        return ' '.join(date.split(' ')[:-1])
 
     def clean_params(self, params={}):
         """

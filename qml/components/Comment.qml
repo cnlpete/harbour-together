@@ -37,6 +37,13 @@ Rectangle {
                 text: dataModel.author
                 color: Theme.highlightColor
                 font.pixelSize: Theme.fontSizeExtraSmall
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        pageStack.push(Qt.resolvedUrl("../pages/UserPage.qml"), {user: {username: dataModel.author, info_url: dataModel.author_url}})
+                    }
+                }
             }
 
             Label {

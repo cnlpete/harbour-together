@@ -25,7 +25,7 @@ BackgroundItem {
             width: parent.width
             color: delegate.highlighted ? Theme.highlightColor : Theme.primaryColor
             wrapMode: Text.WordWrap
-            font.pixelSize: Theme.fontSizeSmall
+            font.pixelSize: Theme.fontSizeMedium
         }
 
         Row {
@@ -35,56 +35,51 @@ BackgroundItem {
             spacing: Theme.paddingSmall
 
             QuestionMetadata {
+                visible: typeof author !== "undefined"
                 iconValue: "\uf007"
-                textValue: author
+                textValue: typeof author !== "undefined" ? author : ""
             }
 
             Rectangle {
                 // Separator
+                visible: typeof author !== "undefined"
                 color: "transparent"
                 width: Theme.paddingSmall
                 height: 1
             }
 
             QuestionMetadata {
+                visible: typeof view_count_label !== "undefined"
                 iconValue: "\uf06e"
-                textValue: view_count_label
+                textValue: typeof view_count_label !== "undefined" ? view_count_label : ""
             }
 
             Rectangle {
                 // Separator
+                visible: typeof view_count_label !== "undefined"
                 color: "transparent"
                 width: Theme.paddingSmall
                 height: 1
             }
 
             QuestionMetadata {
+                visible: typeof score_label !== "undefined"
                 iconValue: "\uf164"
-                textValue: score_label
+                textValue: typeof score_label !== "undefined" ? score_label : ""
             }
 
             Rectangle {
                 // Separator
+                visible: typeof score_label !== "undefined"
                 color: "transparent"
                 width: Theme.paddingSmall
                 height: 1
             }
 
             QuestionMetadata {
+                visible: typeof answer_count_label !== "undefined"
                 iconValue: "\uf086"
-                textValue: answer_count_label
-            }
-
-            Rectangle {
-                // Separator
-                color: "transparent"
-                width: Theme.paddingSmall
-                height: 1
-            }
-
-            QuestionMetadata {
-                iconValue: "\uf017"
-                textValue: added_at_label
+                textValue: typeof answer_count_label !== "undefined" ? answer_count_label : ""
             }
         }
     }
