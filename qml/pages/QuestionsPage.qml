@@ -9,7 +9,7 @@ Page {
 
     property int p: 1
     property string scope: "all"
-    property string order: getSetting('order')
+    property string order: "activity"
     property string direction: "desc"
     property string query: ""
     property string tags: ""
@@ -37,27 +37,17 @@ Page {
             }
 
             MenuItem {
-                text: {
-                    var label = qsTr("Sort by") + ": "
-                    switch (settings.order){
-                    case Settings.Date:
-                        label += qsTr("Date")
-                        break;
-                    case Settings.Activity:
-                        label += qsTr("Activity")
-                        break;
-                    case Settings.Answers:
-                        label += qsTr("Answers")
-                        break;
-                    case Settings.Votes:
-                        label += qsTr("Votes")
-                        break;
-                    }
-
-                    return label
-                }
+                text: qsTr("Filters")
                 onClicked: {
-                    pageStack.push(Qt.resolvedUrl("SortPage.qml"))
+                    var filtersPage = pageStack.push(Qt.resolvedUrl("FiltersPage.qml"), {scope: scope, order: order, direction: direction, tags: tags})
+                    filtersPage.close.connect(function(){
+                        scope = filtersPage.scope
+                        order = filtersPage.order
+                        direction = filtersPage.direction
+                        tags = filtersPage.tags
+
+                        refresh()
+                    })
                 }
             }
 
@@ -80,6 +70,7 @@ Page {
                 width: parent.width
                 placeholderText: qsTr("Search, ask or submit idea")
 
+                EnterKey.iconSource: text ? "image://theme/icon-m-search" : "image://theme/icon-m-enter-close"
                 EnterKey.enabled: searchField.text.length > 0
                 EnterKey.onClicked: {
                     searchField.focus = false
