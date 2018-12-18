@@ -69,7 +69,7 @@ Page {
                     MenuItem {
                         text: qsTr("date")
                         onClicked: {
-                            order = 'date'
+                            order = 'age'
                         }
                     }
 
@@ -130,7 +130,7 @@ Page {
                 label: qsTr("Tags")
                 placeholderText: label
                 width: parent.width
-                EnterKey.iconSource: text ? "image://theme/icon-m-search" : "image://theme/icon-m-enter-close"
+                EnterKey.iconSource: "image://theme/icon-m-enter-close"
                 EnterKey.onClicked: {
                     tags = text
                 }

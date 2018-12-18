@@ -265,6 +265,14 @@ Page {
                          sort: sort
                      }],
                     function(rs){
+                        if (rs.followers){
+                            question.followers = rs.followers
+                        }
+
+                        if (rs.related){
+                            question.related = rs.related
+                        }
+
                         if (rs.comments){
                             for (var i=0; i<rs.comments.length; i++){
                                 commentsModel.append(rs.comments[i])
@@ -291,6 +299,8 @@ Page {
 
                         pushUpMenu.busy = false
                         loading = false
+
+                        pageStack.pushAttached(Qt.resolvedUrl("QuestionExtrasPage.qml"), {question: question})
                     })
         }else if (question.id){
             py.call("app.main.get_question_by_id", [question.id], function(rs){

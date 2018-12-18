@@ -30,10 +30,8 @@ Page {
             id: pullDownMenu
 
             MenuItem {
-                text: qsTr("Settings")
-                onClicked: {
-                    pageStack.push(Qt.resolvedUrl("SettingsPage.qml"))
-                }
+                text: qsTr("About")
+                onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
             }
 
             MenuItem {
@@ -41,12 +39,29 @@ Page {
                 onClicked: {
                     var filtersPage = pageStack.push(Qt.resolvedUrl("FiltersPage.qml"), {scope: scope, order: order, direction: direction, tags: tags})
                     filtersPage.close.connect(function(){
-                        scope = filtersPage.scope
-                        order = filtersPage.order
-                        direction = filtersPage.direction
-                        tags = filtersPage.tags
+                        var reload = false
 
-                        refresh()
+                        if (scope !== filtersPage.scope){
+                            scope = filtersPage.scope
+                            reload = true
+                        }
+                        if (order !== filtersPage.order){
+                            order = filtersPage.order
+                            reload = true
+                        }
+                        if (direction !== filtersPage.direction){
+                            direction = filtersPage.direction
+                            reload = true
+                        }
+                        if (tags !== filtersPage.tags){
+                            tags = filtersPage.tags
+                            reload = true
+                        }
+
+                        if (reload){
+                            p = 1
+                            refresh()
+                        }
                     })
                 }
             }
@@ -69,23 +84,12 @@ Page {
                 id: searchField
                 width: parent.width
                 placeholderText: qsTr("Search, ask or submit idea")
-
-                EnterKey.iconSource: text ? "image://theme/icon-m-search" : "image://theme/icon-m-enter-close"
-                EnterKey.enabled: searchField.text.length > 0
+                EnterKey.iconSource: "image://theme/icon-m-search"
                 EnterKey.onClicked: {
                     searchField.focus = false
                     query = searchField.text
                     p = 1
                     refresh()
-                }
-
-                onTextChanged: {
-                    if (!searchField.text && query){
-                        searchField.focus = false
-                        query = ""
-                        p = 1
-                        refresh()
-                    }
                 }
             }
         }

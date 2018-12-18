@@ -43,6 +43,7 @@ Page {
                 spacing: Theme.paddingMedium
 
                 Rectangle {
+                    id: avartarElm
                     width: Theme.iconSizeExtraLarge
                     height: width
 
@@ -53,6 +54,14 @@ Page {
                 }
 
                 Column {
+                    width: parent.width - avartarElm.width
+
+                    QuestionStat {
+                        label: qsTr('Member since')
+                        value: user.created
+                        width: parent.width
+                    }
+
                     Label {
                         id: created
 
@@ -131,6 +140,7 @@ Page {
 
             avartar.source = rs.avartar_url
             created.value = rs.created
+            user.created = rs.created
             last_seen.value = rs.last_seen_label
             score.value = rs.score
             question_section.count = rs.questions_count

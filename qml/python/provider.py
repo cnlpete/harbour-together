@@ -243,6 +243,21 @@ class Provider:
         # Parse question's answers
         data['answers'] = self.parse_answer(dom)
 
+        # Parse question's extras
+        favorite_node = dom.find('div', attrs={'id': 'favorite-number'})
+        if favorite_node is not None:
+            data['followers'] = favorite_node.get_text().strip()
+
+        data['related'] = []
+        related_nodes = dom.find('div', class_='questions-related')
+        if related_nodes is not None:
+            for related_node in related_nodes.select('p'):
+                a_node = related_node.find('a')
+                item = {}
+                item['title'] = a_node.get_text()
+                item['url'] = self.get_link(a_node.get('href'))
+                data['related'].append(item)
+
         return data
 
     def build_list_url(self, params={}):
@@ -356,7 +371,7 @@ class Provider:
         elif link.find('//') == 0:
             return 'http:' + link
         elif link.find('/') == 0:
-            return BASE_URL + link
+            return BASE_URL + link.strip('/')
         else:
             return link
 
