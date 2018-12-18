@@ -57,36 +57,21 @@ Page {
                     width: parent.width - avartarElm.width
 
                     QuestionStat {
+                        id: created
                         label: qsTr('Member since')
-                        value: user.created
                         width: parent.width
                     }
 
-                    Label {
-                        id: created
-
-                        property string value: ''
-
-                        text: qsTr('Member since') + ': ' + value
-                        font.pixelSize: Theme.fontSizeSmall
-                    }
-
-                    Label {
+                    QuestionStat {
                         id: last_seen
-
-                        property string value: ''
-
-                        text: qsTr('Last seen') + ': ' + value
-                        font.pixelSize: Theme.fontSizeSmall
+                        label: qsTr('Last seen')
+                        width: parent.width
                     }
 
-                    Label {
+                    QuestionStat {
                         id: score
-
-                        property string value: ''
-
-                        text: qsTr('Karma') + ': ' + value
-                        font.pixelSize: Theme.fontSizeSmall
+                        label: qsTr('Karma')
+                        width: parent.width
                     }
                 }
             }
@@ -96,7 +81,7 @@ Page {
 
                 property int count: 0
 
-                text: count + ' ' + qsTr('Questions')
+                text: qsTr('%1 Questions').arg(count)
             }
 
             ListView {
@@ -140,7 +125,6 @@ Page {
 
             avartar.source = rs.avartar_url
             created.value = rs.created
-            user.created = rs.created
             last_seen.value = rs.last_seen_label
             score.value = rs.score
             question_section.count = rs.questions_count
