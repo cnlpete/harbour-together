@@ -30,6 +30,7 @@ Page {
                     switch (currentIndex){
                     case 0: return qsTr("See all questions")
                     case 1: return qsTr("See unanswered questions")
+                    case 2: return qsTr("See your followed questions")
                     default: return ""
                     }
                 }
@@ -47,6 +48,14 @@ Page {
                         onClicked: {
                             scope = 'unanswered'
                         }
+                    }
+
+                    MenuItem {
+                        text: qsTr("followed")
+                        onClicked: {
+                            scope = 'followed'
+                        }
+                        visible: app.isLoggedIn
                     }
                 }
             }

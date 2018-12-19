@@ -120,7 +120,7 @@ Page {
             busy.text = qsTr("Could not load data")
         })
 
-        py.call('app.main.get_user', [user], function(rs){
+        py.call('app.api.get_user', [user], function(rs){
             loading = false
 
             avartar.source = rs.avartar_url

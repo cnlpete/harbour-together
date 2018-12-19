@@ -12,7 +12,7 @@
 # The name of your application
 TARGET = harbour-together
 
-CONFIG += sailfishapp
+CONFIG += sailfishapp webkit
 
 # Write version file
 VERSION_H = \

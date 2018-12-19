@@ -35,6 +35,11 @@ Page {
             }
 
             MenuItem {
+                text: qsTr("Login")
+                onClicked: pageStack.push(Qt.resolvedUrl("LoginPage.qml"))
+            }
+
+            MenuItem {
                 text: qsTr("Filters")
                 onClicked: {
                     var filtersPage = pageStack.push(Qt.resolvedUrl("FiltersPage.qml"), {scope: scope, order: order, direction: direction, tags: tags})
@@ -97,11 +102,10 @@ Page {
 
         delegate: QuestionDelegate {
             onClicked: {
-                py.setHandler('markdown.finished', function(html){
+                py.call('app.api.markdown', [model.body], function(html){
                     model.body = html
                     pageStack.push(Qt.resolvedUrl("QuestionPage.qml"), {question: model})
                 })
-                py.call('app.main.markdown', [model.body])
             }
         }
 
@@ -187,28 +191,20 @@ Page {
             pushUpMenu.visible = false
         }
 
-        py.call('app.main.get_questions',
-                [{
-                     scope: scope,
-                     sort: order + '-' + direction,
-                     tags: tags,
-                     query: query,
-                     page: p
-                 }],
-                function(rs){
-                    pullDownMenu.busy = false
-                    pushUpMenu.busy = false
-                    loader.visible = false
-                    loading = false
+        py.call('app.api.get_questions', [{scope: scope, sort: order + '-' + direction, tags: tags, query: query, page: p}], function(rs){
+            pullDownMenu.busy = false
+            pushUpMenu.busy = false
+            loader.visible = false
+            loading = false
 
-                    if (rs.questions){
-                        pushUpMenu.visible = true
+            if (rs.questions){
+                pushUpMenu.visible = true
 
-                        for (var i=0; i<rs.questions.length; i++){
-                            listModel.append(rs.questions[i])
-                        }
-                    }
-                })
+                for (var i=0; i<rs.questions.length; i++){
+                    listModel.append(rs.questions[i])
+                }
+            }
+        })
     }
 
     function viewChanged(){
