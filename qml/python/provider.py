@@ -561,6 +561,10 @@ class Provider:
         item['last_activity'] = q['last_activity_at']
         item['last_activity_label'] = timeago.format(datetime.fromtimestamp(int(q['last_activity_at']), TIMEZONE), datetime.now(TIMEZONE))
 
+        item['tags'] = []
+        for tag in q['tags']:
+            item['tags'].append({'name': tag})
+
         return item
 
     def convert_count(self, count):

@@ -64,6 +64,18 @@ Page {
             }
 
             QuestionStat {
+                label: qsTr("Voted")
+                value: qsTr("%1 times").arg(question.score)
+                width: parent.width
+            }
+
+            QuestionStat {
+                label: qsTr("Answered")
+                value: qsTr("%1 times").arg(question.answer_count)
+                width: parent.width
+            }
+
+            QuestionStat {
                 label: qsTr("Last updated")
                 value: question.last_activity_label
                 width: parent.width
@@ -105,6 +117,8 @@ Page {
                 }
             }
         }
+
+        VerticalScrollDecorator {}
     }
 
     Component.onCompleted: {

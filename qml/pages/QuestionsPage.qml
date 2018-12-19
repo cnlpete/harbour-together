@@ -98,7 +98,7 @@ Page {
             onClicked: {
                 py.setHandler('markdown.finished', function(html){
                     model.body = html
-                    pageStack.push(Qt.resolvedUrl("QuestionPage.qml"), {question: Utils.clone(model)})
+                    pageStack.push(Qt.resolvedUrl("QuestionPage.qml"), {question: model})
                 })
                 py.call('app.main.markdown', [model.body])
             }

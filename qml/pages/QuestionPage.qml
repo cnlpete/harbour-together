@@ -43,6 +43,44 @@ Page {
                     right: parent.right
                 }
 
+                Flow {
+                    spacing: Theme.paddingSmall
+                    anchors.left: parent.left
+                    anchors.leftMargin: Theme.horizontalPageMargin
+                    anchors.right: parent.right
+                    anchors.rightMargin: Theme.horizontalPageMargin
+
+                    Repeater {
+                        model: ListModel {
+                            id: tagsModel
+                        }
+
+                        Rectangle {
+                            height: tagLbl.height + Theme.paddingSmall
+                            width: tagLbl.width + 2 * Theme.paddingMedium
+                            color: "transparent"
+                            border.width: 1
+                            border.color: Theme.secondaryColor
+
+                            Label {
+                                id: tagLbl
+                                text: model.name
+                                font.pixelSize: Theme.fontSizeExtraSmall
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.verticalCenter: parent.verticalCenter
+                                color: Theme.highlightColor
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: {
+                                        console.log(model.name)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 Label {
                     text: question.body || ""
                     color: Theme.primaryColor
@@ -256,6 +294,17 @@ Page {
     function refresh(){
         if (question.body){
             loading = true
+
+            if (question.tags.count){
+                for (var i=0; i<question.tags.count; i++){
+                    tagsModel.append(question.tags.get(i))
+                }
+            }else if (question.tags.length){
+                for (var i=0; i<question.tags.length; i++){
+                    tagsModel.append(question.tags[i])
+                }
+            }
+
             py.call('app.main.get_question',
                     [{
                          id: question.id,
