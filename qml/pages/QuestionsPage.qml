@@ -91,6 +91,7 @@ Page {
                     p = 1
                     refresh()
                 }
+                onTextChanged: query = searchField.text
             }
         }
 
@@ -133,24 +134,6 @@ Page {
     }
 
     Component.onCompleted: {
-        py.setHandler('questions.finished', function(rs){
-            // If not check updates request
-            if (!loading) return
-
-            pullDownMenu.busy = false
-            pushUpMenu.busy = false
-            loader.visible = false
-            loading = false
-
-            if (rs.questions){
-                pushUpMenu.visible = true
-
-                for (var i=0; i<rs.questions.length; i++){
-                    listModel.append(rs.questions[i])
-                }
-            }
-        })
-
         py.setHandler('questions.error', function(){
             loader.visible = false
             pullDownMenu.busy = false
@@ -204,13 +187,28 @@ Page {
             pushUpMenu.visible = false
         }
 
-        py.call('app.main.get_questions', [{
-                                               scope: scope,
-                                               sort: order + '-' + direction,
-                                               tags: tags,
-                                               query: query,
-                                               page: p
-                                           }])
+        py.call('app.main.get_questions',
+                [{
+                     scope: scope,
+                     sort: order + '-' + direction,
+                     tags: tags,
+                     query: query,
+                     page: p
+                 }],
+                function(rs){
+                    pullDownMenu.busy = false
+                    pushUpMenu.busy = false
+                    loader.visible = false
+                    loading = false
+
+                    if (rs.questions){
+                        pushUpMenu.visible = true
+
+                        for (var i=0; i<rs.questions.length; i++){
+                            listModel.append(rs.questions[i])
+                        }
+                    }
+                })
     }
 
     function viewChanged(){

@@ -44,7 +44,7 @@ Page {
                 }
 
                 Flow {
-                    spacing: Theme.paddingSmall
+                    spacing: Theme.paddingMedium
                     anchors.left: parent.left
                     anchors.leftMargin: Theme.horizontalPageMargin
                     anchors.right: parent.right
@@ -58,27 +58,35 @@ Page {
                         Rectangle {
                             height: tagLbl.height + Theme.paddingSmall
                             width: tagLbl.width + 2 * Theme.paddingMedium
-                            color: "transparent"
+                            color: tagMouse.pressed ? Theme.highlightBackgroundColor : "transparent"
                             border.width: 1
                             border.color: Theme.secondaryColor
 
                             Label {
                                 id: tagLbl
                                 text: model.name
-                                font.pixelSize: Theme.fontSizeExtraSmall
+                                font.pixelSize: Theme.fontSizeSmall
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 anchors.verticalCenter: parent.verticalCenter
-                                color: Theme.highlightColor
+                                color: tagMouse.pressed ? Theme.primaryColor : Theme.highlightColor
 
                                 MouseArea {
+                                    id: tagMouse
                                     anchors.fill: parent
                                     onClicked: {
-                                        console.log(model.name)
+                                        pageStack.push(Qt.resolvedUrl("QuestionsPage.qml"), {tags: model.name})
                                     }
                                 }
                             }
                         }
                     }
+                }
+
+                Rectangle {
+                    // separator
+                    color: "transparent"
+                    width: parent.width
+                    height: Theme.paddingMedium
                 }
 
                 Label {
