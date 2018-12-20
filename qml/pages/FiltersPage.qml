@@ -148,10 +148,31 @@ Page {
         }
     }
 
+    Connections {
+        target: settings
+        onSessionIdChanged: {
+            if (!settings.sessionId && page.scope === 'followed'){
+                page.scope = 'all'
+                update()
+            }
+        }
+    }
+
     Component.onCompleted: {
+        update()
+    }
+
+    onStatusChanged: {
+        if (status === PageStatus.Inactive){
+            page.close()
+        }
+    }
+
+    function update(){
         switch (scope){
         case 'all': scopeFld.currentIndex = 0; break
         case 'unanswered': scopeFld.currentIndex = 1; break
+        case 'followed': scopeFld.currentIndex = 2; break
         }
 
         switch (order){
@@ -168,6 +189,4 @@ Page {
 
         tagsFld.text = tags
     }
-
-    Component.onDestruction: page.close()
 }

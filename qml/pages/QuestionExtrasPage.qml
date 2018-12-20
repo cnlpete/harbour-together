@@ -38,12 +38,14 @@ Page {
             SectionHeader {
                 text: qsTr("Public thread")
                 x: 0
+                visible: false
             }
 
             Label {
                 text: "This thread is public, all members of Together.Jolla.Com can read this page."
                 width: parent.width
                 wrapMode: Text.WordWrap
+                visible: false
             }
 
             SectionHeader {

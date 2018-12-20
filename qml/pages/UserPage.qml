@@ -20,8 +20,20 @@ Page {
             MenuItem {
                 text: qsTr("View in browser")
                 onClicked: {
-                    Utils.handleLink(user.info_url, true)
+                    Utils.handleLink(user.profile_url, true)
                 }
+            }
+
+            MenuItem {
+                text: qsTr("Logout")
+                onClicked: {
+                    settings.sessionId = ''
+                    settings.username = ''
+                    settings.profileUrl = ''
+                    py.call('app.api.do_logout')
+                    pageStack.pop()
+                }
+                visible: user.username === settings.username
             }
         }
 

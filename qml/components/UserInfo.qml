@@ -37,10 +37,10 @@ Rectangle {
             }
 
             MouseArea {
-                visible: dataModel.info_url
+                visible: dataModel.profile_url
                 anchors.fill: parent
                 onClicked: {
-                    pageStack.push(Qt.resolvedUrl("../pages/UserPage.qml"), {user: {username: dataModel.username, info_url: dataModel.info_url}})
+                    pageStack.push(Qt.resolvedUrl("../pages/UserPage.qml"), {user: {username: dataModel.username, profile_url: dataModel.profile_url}})
                 }
             }
         }

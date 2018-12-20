@@ -30,26 +30,35 @@ from datetime import datetime, timezone, timedelta
 import pyotherside
 import sqlite3
 from http.cookies import SimpleCookie
+import requests
 import markdown
 import timeago
 from bs4 import BeautifulSoup
 
 BASE_URL = 'https://together.jolla.com/'
 TIMEZONE = timezone(timedelta(hours=2), 'Europe/Helsinki')
-
+COOKIE_PATH = '/home/nemo/.local/share/harbour-together/harbour-together/.QtWebKit/cookies.db'
 
 class Api:
     def __init__(self):
+        self.sessionId = ''
+        self.do_login()
         pass
+
+    def do_logout(self):
+        """
+        Logout by clear cookie
+        """
+
+        self.sessionId = ''
 
     def do_login(self):
         """
-        Try get session Id from Webkit cookies DB
+        Try get session Id from WebKit cookies DB
         """
 
         try:
-            cookiePath = '/home/nemo/.local/share/harbour-together/harbour-together/.QtWebKit/cookies.db'
-            conn = sqlite3.connect(cookiePath)
+            conn = sqlite3.connect(COOKIE_PATH)
             cursor = conn.cursor()
             params = ('together.jolla.comsessionid',)
             cursor.execute('SELECT * FROM cookies WHERE cookieId = ?', params)
@@ -59,7 +68,8 @@ class Api:
                 cookie.load(row[1].decode('utf-8'))
                 for cookie_name, morsel in cookie.items():
                     if cookie_name == 'sessionid':
-                        session_id = morsel.value
+                        self.sessionId = morsel.value
+                        return self.sessionId
             else:
                 raise Exception('CookieId not found')
         except:
@@ -114,12 +124,12 @@ class Api:
         """
 
         try:
-            if 'info_url' in user:
-                url = user['info_url']
+            if 'profile_url' in user:
+                url = self.get_link(user['profile_url'])
             else:
                 url = BASE_URL + 'users/' + user['id'] + '/' + user['username'].lower()
             
-            data = self.request('get', url, '_parse_user_profile', user)
+            data = self.request('get', url, '_parse_user_page', user)
             return data
         except Exception as e:
             Utils.log(traceback.format_exc())
@@ -140,9 +150,16 @@ class Api:
             Utils.send('markdown.error')
             Utils.error(e.args[0])
 
-    def _parse_user_profile(self, html, user):
+    def _parse_user_header(self, node):
         """
-        Parse user profile from html response
+        Parse user info from html in page header
+        """
+
+        pass
+
+    def _parse_user_page(self, html, user):
+        """
+        Parse user info from profile page
         """
 
         dom = BeautifulSoup(html, 'html.parser')
@@ -461,7 +478,7 @@ class Api:
             for post_node in node.find_all('div', class_='post-update-info'):
                 item = {
                     'username': '',
-                    'info_url': '',
+                    'profile_url': '',
                     'is_wiki': False,
                     'asked': False, 'answered': False, 'updated': False,
                     'date': '', "date_ago": '',
@@ -493,7 +510,7 @@ class Api:
                         name_node = info_node.find('a', recursive=False)
                         if name_node is not None:
                             item['username'] = name_node.get_text()
-                            item['info_url'] = self.get_link(name_node.get('href'))
+                            item['profile_url'] = self.get_link(name_node.get('href'))
 
                         reputation_node = info_node.find('span', class_='reputation-score')
                         if reputation_node is not None:
@@ -515,7 +532,7 @@ class Api:
                         if idx == 1:
                             item['username'] = data[0]['username']
                             item['avatar_url'] = data[0]['avatar_url']
-                            item['info_url'] = data[0]['info_url']
+                            item['profile_url'] = data[0]['profile_url']
                             item['reputation'] = data[0]['reputation']
                             item['has_badge'] = data[0]['has_badge']
                             item['badge1'] = data[0]['badge1']
@@ -556,13 +573,16 @@ class Api:
         Utils.log(method.upper() + ': ' + url)
 
         try:
-            response = urllib.request.urlopen(url)
-            Utils.log('Response code: ' + str(response.getcode()))
+            cookies = {}
+            if self.sessionId:
+                cookies['sessionid'] = self.sessionId
+            response = requests.get(url, cookies=cookies)
+            Utils.log('Response code: ' + str(response.status_code))
         except:
             Utils.log(traceback.format_exc())
             raise Exception('Network request failed')
 
-        return getattr(self, callback)(response.read().decode('utf-8'), params)
+        return getattr(self, callback)(response.text, params)
 
     def _parse_questions(self, text, params):
         """

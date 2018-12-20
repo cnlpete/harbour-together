@@ -15,9 +15,10 @@ ApplicationWindow {
 
     cover: Qt.resolvedUrl("cover/CoverPage.qml")
     allowedOrientations: defaultAllowedOrientations
+    initialPage: Qt.resolvedUrl("pages/QuestionsPage.qml")
 
     Component.onCompleted: {
-        mainPage = pageStack.push(Qt.resolvedUrl("pages/QuestionsPage.qml"))
+        app.isLoggedIn = !!settings.sessionId
     }
 
     FontLoader {
@@ -27,6 +28,9 @@ ApplicationWindow {
 
     Settings {
         id: settings
+        onSessionIdChanged: {
+            app.isLoggedIn = !!settings.sessionId
+        }
     }
 
     Notification {
@@ -44,7 +48,7 @@ ApplicationWindow {
 
             setHandler('error', function(msg){
                 notification.previewSummary = qsTr("Error")
-                notification.previewBody = msg
+                notification.previewBody = qsTr(msg)
                 notification.publish()
             })
 

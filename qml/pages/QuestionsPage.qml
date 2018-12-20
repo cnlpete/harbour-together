@@ -1,6 +1,5 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import lbee.together.core 1.0
 import "../components"
 import "../js/utils.js" as Utils
 
@@ -30,45 +29,20 @@ Page {
             id: pullDownMenu
 
             MenuItem {
-                text: qsTr("About")
-                onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
+                text: qsTr("Settings")
+                onClicked: pageStack.push(Qt.resolvedUrl("SettingsPage.qml"))
             }
 
             MenuItem {
                 text: qsTr("Login")
                 onClicked: pageStack.push(Qt.resolvedUrl("LoginPage.qml"))
+                visible: !app.isLoggedIn
             }
 
             MenuItem {
-                text: qsTr("Filters")
-                onClicked: {
-                    var filtersPage = pageStack.push(Qt.resolvedUrl("FiltersPage.qml"), {scope: scope, order: order, direction: direction, tags: tags})
-                    filtersPage.close.connect(function(){
-                        var reload = false
-
-                        if (scope !== filtersPage.scope){
-                            scope = filtersPage.scope
-                            reload = true
-                        }
-                        if (order !== filtersPage.order){
-                            order = filtersPage.order
-                            reload = true
-                        }
-                        if (direction !== filtersPage.direction){
-                            direction = filtersPage.direction
-                            reload = true
-                        }
-                        if (tags !== filtersPage.tags){
-                            tags = filtersPage.tags
-                            reload = true
-                        }
-
-                        if (reload){
-                            p = 1
-                            refresh()
-                        }
-                    })
-                }
+                text: settings.username
+                onClicked: pageStack.push(Qt.resolvedUrl("UserPage.qml"), {user: {username: settings.username, profile_url: settings.profileUrl}})
+                visible: app.isLoggedIn
             }
 
             MenuItem {
@@ -150,28 +124,11 @@ Page {
 
     Connections {
         target: settings
-        onOrderChanged: {
-            order = getSetting('order')
-            p = 1
-            refresh()
-        }
-    }
-
-    function getSetting(name){
-        var value
-
-        switch (name){
-        case 'order':
-            switch (settings.order){
-            case Settings.Date: value = "age"; break;
-            case Settings.Answers: value = "answers"; break;
-            case Settings.Votes: value = "votes"; break;
-            case Settings.Activity:
-            default: value = "activity";
+        onSessionIdChanged: {
+            if (!settings.sessionId && root.scope === 'followed'){
+                root.scope = 'all'
             }
         }
-
-        return value
     }
 
     function refresh(){
@@ -204,20 +161,33 @@ Page {
                     listModel.append(rs.questions[i])
                 }
             }
+
+            var filtersPage = pageStack.pushAttached(Qt.resolvedUrl("FiltersPage.qml"), {scope: scope, order: order, direction: direction, tags: tags})
+            filtersPage.close.connect(function(){
+                var reload = false
+
+                if (scope !== filtersPage.scope){
+                    scope = filtersPage.scope
+                    reload = true
+                }
+                if (order !== filtersPage.order){
+                    order = filtersPage.order
+                    reload = true
+                }
+                if (direction !== filtersPage.direction){
+                    direction = filtersPage.direction
+                    reload = true
+                }
+                if (tags !== filtersPage.tags){
+                    tags = filtersPage.tags
+                    reload = true
+                }
+
+                if (reload){
+                    p = 1
+                    refresh()
+                }
+            })
         })
-    }
-
-    function viewChanged(){
-        return scope !== "all"
-                || settings.order !== Settings.Activity
-                || query !== ""
-                || tags !== ""
-    }
-
-    function replaceItems(items){
-        listModel.clear()
-        for (var i=0; i<items.length; i++){
-            listModel.append(items[i])
-        }
     }
 }
