@@ -8,6 +8,7 @@ Page {
     property string order: "activity"
     property string direction: "desc"
     property string tags: ""
+    property string query: ""
 
     signal close()
 
@@ -22,6 +23,24 @@ Page {
         }
 
         model: VisualItemModel {
+            TextField {
+                id: queryFld
+                label: qsTr("Search, ask or submit idea")
+                placeholderText: label
+                width: parent.width
+                EnterKey.iconSource: "image://theme/icon-m-enter-close"
+                onTextChanged: query = text
+            }
+
+            TextField {
+                id: tagsFld
+                label: qsTr("Tags (comma-separated)")
+                placeholderText: label
+                width: parent.width
+                EnterKey.iconSource: "image://theme/icon-m-enter-close"
+                onTextChanged: tags = text
+            }
+
             ComboBox {
                 id: scopeFld
                 width: listView.width
@@ -133,18 +152,6 @@ Page {
                     }
                 }
             }
-
-            TextField {
-                id: tagsFld
-                label: qsTr("Tags")
-                placeholderText: label
-                width: parent.width
-                EnterKey.iconSource: "image://theme/icon-m-enter-close"
-                EnterKey.onClicked: {
-                    tags = text
-                }
-                onTextChanged: tags = text
-            }
         }
     }
 
@@ -188,5 +195,6 @@ Page {
         }
 
         tagsFld.text = tags
+        queryFld.text = query
     }
 }

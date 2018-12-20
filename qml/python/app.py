@@ -597,6 +597,8 @@ class Api:
 
         output = {}
         output['count'] = data['count']
+        output['pages'] = data['pages']
+        output['page'] = params['page'] if 'page' in params else 1
         output['questions'] = []
         for q in data['questions']:
             output['questions'].append(self.convert_question(q))

@@ -74,7 +74,7 @@ Page {
                                     id: tagMouse
                                     anchors.fill: parent
                                     onClicked: {
-                                        pageStack.push(Qt.resolvedUrl("QuestionsPage.qml"), {tags: model.name})
+                                        pageStack.push(Qt.resolvedUrl("QuestionsPage.qml"), {tags: model.name, compactView: true})
                                     }
                                 }
                             }
