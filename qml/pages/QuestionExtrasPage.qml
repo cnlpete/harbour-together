@@ -4,7 +4,11 @@ import "../components"
 import "../js/utils.js" as Utils
 
 Page {
-    property variant question: ({})
+    id: root
+
+    property var question: ({})
+    property bool following: false
+    property int followers: 0
 
     allowedOrientations: Orientation.All
 
@@ -14,6 +18,7 @@ Page {
 
         Column {
             id: content
+            spacing: Theme.paddingSmall
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.leftMargin: Theme.horizontalPageMargin
@@ -26,13 +31,44 @@ Page {
             SectionHeader {
                 text: qsTr("Question tools")
                 x: 0
-                visible: typeof question.followers !== "undefined"
+            }
+
+            Button {
+                id: followBtn
+
+                property bool loading: false
+
+                text: !loading ? (following ? qsTr('\uf00c Following') : qsTr('Follow')) : ''
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: app.isLoggedIn
+                onClicked: {
+                    if (loading) return
+                    loading = true
+
+                    py.call('app.api.do_follow', [question.id], function(rs){
+                        loading = false
+
+                        if (rs.success === 1){
+                            following = !rs.status
+                            followers = rs.count
+                        }
+                    })
+                }
+
+                BusyIndicator {
+                    running: true
+                    visible: followBtn.loading
+                    size: BusyIndicatorSize.Small
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                }
             }
 
             Label {
-                text: typeof question.followers !== "undefined" ? question.followers : ""
+                text: qsTr("%1 followers").arg(followers)
                 width: parent.width
                 wrapMode: Text.WordWrap
+                horizontalAlignment: Text.AlignHCenter
             }
 
             SectionHeader {
@@ -124,6 +160,12 @@ Page {
     }
 
     Component.onCompleted: {
+        if (question.followers){
+            followers = question.followers
+        }
+        if (question.following){
+            following = question.following
+        }
         if (question.related){
             for (var i=0; i<question.related.length; i++){
                 relatedQuestions.append(question.related[i])

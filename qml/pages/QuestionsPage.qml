@@ -135,12 +135,12 @@ Page {
     }
 
     function getFiltersDisplay(){
-        return qsTr("\uf07b %1 \uf15d %2-%3 %4 %5")
+        return qsTr("\uf07b %1   \uf15d %2-%3%4%5")
         .arg(scope)
         .arg(order)
         .arg(direction)
-        .arg(query ? '\uf002 '+query : '')
-        .arg(tags ? '\uf02b '+tags : '')
+        .arg(query ? '   \uf002 '+query : '')
+        .arg(tags ? '   \uf02b '+tags : '')
     }
 
     function attachFiltersPage(){

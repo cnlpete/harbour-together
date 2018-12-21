@@ -296,6 +296,12 @@ Page {
             loading = false
         })
 
+        if (question.tags && question.tags.count){
+            for (var i=0; i<question.tags.count; i++){
+                tagsModel.append(question.tags.get(i))
+            }
+        }
+
         refresh()
     }
 
@@ -303,43 +309,31 @@ Page {
         if (question.body){
             loading = true
 
-            if (question.tags.count){
-                for (var i=0; i<question.tags.count; i++){
-                    tagsModel.append(question.tags.get(i))
-                }
-            }else if (question.tags.length){
-                for (var i=0; i<question.tags.length; i++){
-                    tagsModel.append(question.tags[i])
-                }
-            }
-
             py.call('app.api.get_question', [{id: question.id, url: question.url, author: question.author, page: p, sort: sort}], function(rs){
                 if (rs.followers){
                     question.followers = rs.followers
                 }
-
+                if (rs.following){
+                    question.following = rs.following
+                }
                 if (rs.related){
                     question.related = rs.related
                 }
-
                 if (rs.comments){
                     for (var i=0; i<rs.comments.length; i++){
                         commentsModel.append(rs.comments[i])
                     }
                 }
-
                 if (rs.answers){
                     for (var i=0; i<rs.answers.length; i++){
                         answerModel.append(rs.answers[i])
                     }
                 }
-
                 if (rs.users){
                     for (var i=0; i<rs.users.length; i++){
                         usersModel.append(rs.users[i])
                     }
                 }
-
                 if (rs.has_pages){
                     pushUpMenu.visible = true
                 }else{
@@ -355,6 +349,13 @@ Page {
             py.call("app.api.get_question_by_id", [question.id], function(rs){
                 if (rs){
                     question = rs
+
+                    if (question.tags && question.tags.length){
+                        for (var i=0; i<question.tags.length; i++){
+                            tagsModel.append(question.tags[i])
+                        }
+                    }
+
                     refresh()
                 }
             })

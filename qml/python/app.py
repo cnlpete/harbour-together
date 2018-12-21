@@ -45,6 +45,31 @@ class Api:
         self.do_login()
         pass
 
+    def do_follow(self, question_id):
+        """
+        Follow a question
+        """
+
+        try:
+            if not self.sessionId:
+                raise Exception('Anonymous users cannot follow questions')
+            if not question_id:
+                raise Exception('Question Id is empty')
+            
+            voteUrl = BASE_URL + 'vote'
+            response = self.request('POST', voteUrl, params={'type': 4, 'postId': int(question_id)})
+            response = response.json()
+            if response['success'] == 0:
+                if response['message']:
+                    raise Exception(response['message'])
+                else:
+                    raise Exception('Something went wrong. Please try again.')
+            else:
+                return response
+        except:
+            Utils.log(traceback.format_exc())
+            Utils.error(e.args[0])
+
     def do_logout(self):
         """
         Logout by clear cookie
@@ -307,9 +332,19 @@ class Api:
         data['answers'] = self.parse_answer(dom)
 
         # Parse question's extras
+        data['followers'] = 0
         favorite_node = dom.find('div', attrs={'id': 'favorite-number'})
         if favorite_node is not None:
-            data['followers'] = favorite_node.get_text().strip()
+            favorite_text = favorite_node.get_text().strip()
+            favorite_pattern = re.compile('(\d+) followers')
+            favorite_result = favorite_pattern.match(favorite_text)
+            if favorite_result:
+                data['followers'] = int(favorite_result.group(1))
+
+        data['following'] = False
+        favorite_btn_node = dom.select_one('a.button.followed')
+        if favorite_btn_node is not None and favorite_btn_node.get('alt') == 'click to unfollow this question':
+            data['following'] = True
 
         data['related'] = []
         related_nodes = dom.find('div', class_='questions-related')
@@ -565,24 +600,35 @@ class Api:
 
         return new_params
 
-    def request(self, method, url, callback, params={}):
+    def request(self, method, url, callback=None, params={}):
         """
         Perform network request
         """
+        
+        method = method.upper();
 
-        Utils.log(method.upper() + ': ' + url)
+        Utils.log(method + ': ' + url)
 
         try:
             cookies = {}
             if self.sessionId:
                 cookies['sessionid'] = self.sessionId
-            response = requests.get(url, cookies=cookies)
+            
+            if method == 'GET':
+                response = requests.get(url, cookies=cookies, timeout=5)
+            elif method == 'POST':
+                headers = {'x-requested-with': 'XMLHttpRequest'}
+                response = requests.post(url, data=params, cookies=cookies, timeout=5, headers=headers)
+            
             Utils.log('Response code: ' + str(response.status_code))
+
+            if callback:
+                return getattr(self, callback)(response.text, params)
+            else:
+                return response
         except:
             Utils.log(traceback.format_exc())
             raise Exception('Network request failed')
-
-        return getattr(self, callback)(response.text, params)
 
     def _parse_questions(self, text, params):
         """
