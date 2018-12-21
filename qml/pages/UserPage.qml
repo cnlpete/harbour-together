@@ -58,6 +58,7 @@ Page {
                     id: avartarElm
                     width: Theme.iconSizeExtraLarge
                     height: width
+                    color: "transparent"
 
                     Image {
                         id: avartar

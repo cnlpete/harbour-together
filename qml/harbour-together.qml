@@ -35,6 +35,12 @@ ApplicationWindow {
 
     Notification {
         id: notification
+
+        function error(msg){
+            previewSummary = qsTr("Error")
+            previewBody = qsTr(msg)
+            publish()
+        }
     }
 
     Python {
@@ -47,9 +53,7 @@ ApplicationWindow {
             })
 
             setHandler('error', function(msg){
-                notification.previewSummary = qsTr("Error")
-                notification.previewBody = qsTr(msg)
-                notification.publish()
+                notification.error(qsTr(msg))
             })
 
             importModule('app', function(){})

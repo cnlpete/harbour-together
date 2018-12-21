@@ -21,15 +21,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import sys
 import traceback
-import urllib.request
+import urllib.parse
 import json
 import re
 from datetime import datetime, timezone, timedelta
 import pyotherside
 import sqlite3
 from http.cookies import SimpleCookie
+import pprint
 import requests
 import markdown
 import timeago
@@ -42,8 +42,7 @@ COOKIE_PATH = '/home/nemo/.local/share/harbour-together/harbour-together/.QtWebK
 class Api:
     def __init__(self):
         self.sessionId = ''
-        self.do_login()
-        pass
+        self.check_login()
 
     def do_follow(self, question_id):
         """
@@ -66,7 +65,7 @@ class Api:
                     raise Exception('Something went wrong. Please try again.')
             else:
                 return response
-        except:
+        except Exception as e:
             Utils.log(traceback.format_exc())
             Utils.error(e.args[0])
 
@@ -77,7 +76,7 @@ class Api:
 
         self.sessionId = ''
 
-    def do_login(self):
+    def check_login(self):
         """
         Try get session Id from WebKit cookies DB
         """
@@ -95,11 +94,8 @@ class Api:
                     if cookie_name == 'sessionid':
                         self.sessionId = morsel.value
                         return self.sessionId
-            else:
-                raise Exception('CookieId not found')
         except:
             Utils.log(traceback.format_exc())
-            Utils.error('Could not login. Please try again.')
 
     def get_questions(self, params={}):
         """
@@ -175,12 +171,38 @@ class Api:
             Utils.send('markdown.error')
             Utils.error(e.args[0])
 
-    def _parse_user_header(self, node):
+    def _parse_logged_in_user(self, node):
         """
         Parse user info from html in page header
         """
 
-        pass
+        user_node = node.select_one('div#userToolsNav')
+        if user_node:
+            user_stats = user_node.select_one('span.user-info')
+            if not user_stats:
+                return None
+
+            data = {}
+
+            user_link = user_node.select_one('a')
+            link_href = user_link.get('href')
+            if user_link and link_href.find('/users/') != -1:
+                data['profile_url'] = self.get_link(link_href)
+                data['username'] = user_link.get_text()
+                data['id'] = re.compile('\/users\/(\d+)\/').match(link_href).group(1)
+
+            reputation_node = user_node.select_one('a.reputation')
+            if reputation_node:
+                data['reputation'] = reputation_node.get_text().strip().replace('karma: ', '')
+
+            for i in range(1, 4):
+                badge = user_stats.select_one('span.badge' + str(i))
+                if badge:
+                    data['badge' + str(i)] = badge.find_next_sibling('span', class_='badgecount').get_text()
+
+            return data
+
+        return None
 
     def _parse_user_page(self, html, user):
         """
@@ -190,10 +212,16 @@ class Api:
         dom = BeautifulSoup(html, 'html.parser')
         data = {}
 
+        # Parse logged in user
+        logged_user = self._parse_logged_in_user(dom)
+        Utils.log(pprint.pformat(logged_user))
+
+        # Avatar
         avartar_node = dom.find('img', class_='gravatar')
         if avartar_node is not None:
             data['avartar_url'] = self.get_link(avartar_node.get('src'))
 
+        # Karma
         score_node = dom.find('div', class_='scoreNumber')
         if score_node is not None:
             data['score'] = score_node.get_text()
@@ -214,6 +242,7 @@ class Api:
                         data['last_seen'] = last_seen_datetime.strftime('%Y-%m-%d')
                         data['last_seen_label'] = timeago.format(last_seen_datetime, datetime.now(TIMEZONE))
 
+        # Questions count
         questions_a_node = dom.find('a', attrs={'name': 'questions'})
         if questions_a_node is not None:
             questions_h2_node = questions_a_node.find_next('h2')
@@ -222,6 +251,7 @@ class Api:
                 if questions_count_node is not None:
                     data['questions_count'] = int(questions_count_node.get_text())
 
+        # Questions list
         data['questions'] = []
         for question_node in dom.find_all('div', class_='short-summary'):
             question = self._parse_question_html(question_node)
@@ -490,7 +520,7 @@ class Api:
                     for p in comment_body_node.find_all(recursive=False):
                         if 'class' in p.attrs and 'author' in p['class']:
                             item['author'] = p.get_text()
-                            item['author_url'] = self.get_link(p.get('href'))
+                            item['profile_url'] = self.get_link(p.get('href'))
                         elif 'class' in p.attrs and 'age' in p['class']:
                             item['date'] = p.abbr['title']
                             item['date_ago'] = timeago.format(self._parse_datetime(item['date']), datetime.now(TIMEZONE))

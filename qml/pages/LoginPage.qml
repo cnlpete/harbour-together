@@ -21,19 +21,23 @@ Page {
                 if (loadRequest.url.toString() === 'https://together.jolla.com/questions/'){
                     webview.experimental.evaluateJavaScript(root.getUserInfoScript, function(rs){
                         if (rs && rs.url.indexOf('/users/') !== -1){
-                            settings.username = rs.name
-                            settings.profileUrl = rs.url
-                            py.call('app.api.do_login', [], function(sessionId){
-                                settings.sessionId = sessionId
-                                pageStack.push(Qt.resolvedUrl("UserPage.qml"), {user: {username: settings.username, profile_url: settings.profileUrl}})
+                            py.call('app.api.check_login', [], function(sessionId){
+                                if (sessionId){
+                                    settings.sessionId = sessionId
+                                    settings.username = rs.name
+                                    settings.profileUrl = rs.url
+
+                                    pageStack.pop(undefined, PageStackAction.Immediate)
+                                    pageStack.push(Qt.resolvedUrl("UserPage.qml"), {user: {username: settings.username, profile_url: settings.profileUrl}})
+                                }else{
+                                    notification.error(qsTr("Could not login. Please try again."))
+                                    pageStack.pop(undefined, PageStackAction.Immediate)
+                                }
                             })
                         }else{
-                            notification.previewSummary = qsTr("Error")
-                            notification.previewBody = qsTr("Could not login. Please try again.")
-                            notification.publish()
+                            notification.error(qsTr("Could not login. Please try again."))
+                            pageStack.pop(undefined, PageStackAction.Immediate)
                         }
-
-                        pageStack.pop(undefined, PageStackAction.Immediate)
                     })
                 }
             }
