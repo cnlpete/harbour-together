@@ -155,16 +155,6 @@ Page {
         }
     }
 
-    Connections {
-        target: settings
-        onSessionIdChanged: {
-            if (!settings.sessionId && page.scope === 'followed'){
-                page.scope = 'all'
-                update()
-            }
-        }
-    }
-
     Component.onCompleted: {
         update()
     }

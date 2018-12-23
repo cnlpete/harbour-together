@@ -9,17 +9,19 @@ import "components"
 ApplicationWindow {
     id: app
 
-    property Page mainPage
     property bool loading: false
     property bool isLoggedIn: false
+    property string username: ''
+    property string profileUrl: ''
+    property string avatarUrl: ''
+    property int reputation: 0
+    property int badge1: 0
+    property int badge2: 0
+    property int badge3: 0
 
     cover: Qt.resolvedUrl("cover/CoverPage.qml")
     allowedOrientations: defaultAllowedOrientations
     initialPage: Qt.resolvedUrl("pages/QuestionsPage.qml")
-
-    Component.onCompleted: {
-        app.isLoggedIn = !!settings.sessionId
-    }
 
     FontLoader {
         id: iconFont
@@ -28,9 +30,6 @@ ApplicationWindow {
 
     Settings {
         id: settings
-        onSessionIdChanged: {
-            app.isLoggedIn = !!settings.sessionId
-        }
     }
 
     Notification {
@@ -56,19 +55,20 @@ ApplicationWindow {
                 notification.error(qsTr(msg))
             })
 
-            importModule('app', function(){})
-        }
-    }
-
-    function refresh(){
-        moveToMainPage()
-        mainPage.refresh()
-        loading = mainPage.loading
-    }
-
-    function moveToMainPage(){
-        if (pageStack.currentPage != mainPage){
-            pageStack.pop(mainPage, PageStackAction.Immediate)
+            importModule('app', function(){
+                py.call('app.api.get_logged_in_user', [], function(rs){
+                    if (rs){
+                        app.isLoggedIn = true
+                        app.username = rs.username
+                        app.profileUrl = rs.profileUrl
+                        app.avatarUrl = rs.avatarUrl
+                        if (app.reputation) app.reputation = rs.reputation
+                        if (rs.badge1) app.badge1 = rs.badge1
+                        if (rs.badge2) app.badge2 = rs.badge2
+                        if (rs.badge3) app.badge3 = rs.badge3
+                    }
+                })
+            })
         }
     }
 }

@@ -21,28 +21,129 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import os
 import traceback
 import urllib.parse
 import json
 import re
-from datetime import datetime, timezone, timedelta
-import pyotherside
 import sqlite3
-from http.cookies import SimpleCookie
 import pprint
+import pyotherside
 import requests
 import markdown
 import timeago
+from http.cookies import SimpleCookie
+from datetime import datetime, timezone, timedelta
 from bs4 import BeautifulSoup
+from diskcache import Cache
 
 BASE_URL = 'https://together.jolla.com/'
 TIMEZONE = timezone(timedelta(hours=2), 'Europe/Helsinki')
 COOKIE_PATH = '/home/nemo/.local/share/harbour-together/harbour-together/.QtWebKit/cookies.db'
+CACHE_PATH = '/home/nemo/.local/share/harbour-together/harbour-together/cache/'
 
 class Api:
     def __init__(self):
         self.sessionId = ''
-        self.check_login()
+        
+        try:
+            if not os.path.exists(CACHE_PATH):
+                os.makedirs(CACHE_PATH)
+            
+            self.cache = Cache(CACHE_PATH)
+        except:
+            Utils.log(traceback.format_exc())
+            self.cache = None
+
+    def get_logged_in_user(self):
+        """
+        Get logged in user from cache
+        """
+
+        if type(self.cache) is Cache:
+            sessionId = self.cache.get('user.sessionId')
+            if sessionId:
+                self.sessionId = sessionId
+                user = {}
+                user['username'] = self.cache.get('user.username')
+                user['profileUrl'] = self.cache.get('user.profileUrl')
+                user['avatarUrl'] = self.cache.get('user.avatarUrl')
+                user['reputation'] = self.cache.get('user.reputation')
+                user['badge1'] = self.cache.get('user.badge1')
+                user['badge2'] = self.cache.get('user.badge2')
+                user['badge3'] = self.cache.get('user.badge3')
+                return user
+
+    def check_user_update(self):
+        """
+        Check logged in user messages...
+        """
+
+        if not self.sessionId:
+            return None
+
+        try:
+            user = self.get_logged_in_user()
+            if user:
+                updateUrl = self.get_link(user['profileUrl']) + '?sort=inbox'
+                response = self.request('GET', updateUrl)
+                data = self._parse_user_messages_page(response.text)
+                self.set_logged_in_user(data)
+                return data
+            else:
+                raise Exception('Not logged in user.')
+        except:
+            Utils.log(traceback.format_exc())
+            return None
+
+    def _parse_user_messages_page(self, html):
+        """
+        Parse user's messages from page
+        """
+
+        if not html:
+            return None
+
+        dom = BeautifulSoup(html, 'html.parser')
+
+        data = self._parse_logged_in_user(dom)
+
+        return data
+
+    def set_logged_in_user(self, user={}):
+        """
+        Set logged in user to cache
+        """
+
+        try:
+            if type(self.cache) is Cache:
+                sessionId = self.get_session_id_from_cookie()
+                if sessionId:
+                    self.sessionId = sessionId
+                    self.cache.set('user.sessionId', sessionId)
+                    if 'username' in user:
+                        self.cache.set('user.username', user['username'])
+                    if 'profileUrl' in user:
+                        self.cache.set('user.profileUrl', user['profileUrl'])
+                    if 'avatarUrl' in user:
+                        self.cache.set('user.avatarUrl', user['avatarUrl'])
+                    if 'reputation' in user:
+                        self.cache.set('user.reputation', user['reputation'])
+                    if 'badge1' in user:
+                        self.cache.set('user.badge1', user['badge1'])
+                    if 'badge2' in user:
+                        self.cache.set('user.badge2', user['badge2'])
+                    if 'badge3' in user:
+                        self.cache.set('user.badge3', user['badge3'])
+                    
+                    return True
+                else:
+                    raise Exception('Could not login. Please try again.')
+            else:
+                raise Exception('Could not save data.')
+        except:
+            Utils.log(traceback.format_exc())
+            utils.error('Could not login. Please try again.')
 
     def do_follow(self, question_id):
         """
@@ -75,27 +176,31 @@ class Api:
         """
 
         self.sessionId = ''
+        
+        # Clear WebKit cookies DB
+        if os.path.exists(COOKIE_PATH):
+            os.remove(COOKIE_PATH)
 
-    def check_login(self):
+        # Clear cache
+        if type(self.cache) is Cache:
+            self.cache.clear()
+
+    def get_session_id_from_cookie(self):
         """
         Try get session Id from WebKit cookies DB
         """
 
-        try:
-            conn = sqlite3.connect(COOKIE_PATH)
-            cursor = conn.cursor()
-            params = ('together.jolla.comsessionid',)
-            cursor.execute('SELECT * FROM cookies WHERE cookieId = ?', params)
-            row = cursor.fetchone()
-            if row is not None:
-                cookie = SimpleCookie()
-                cookie.load(row[1].decode('utf-8'))
-                for cookie_name, morsel in cookie.items():
-                    if cookie_name == 'sessionid':
-                        self.sessionId = morsel.value
-                        return self.sessionId
-        except:
-            Utils.log(traceback.format_exc())
+        conn = sqlite3.connect(COOKIE_PATH)
+        cursor = conn.cursor()
+        params = ('together.jolla.comsessionid',)
+        cursor.execute('SELECT * FROM cookies WHERE cookieId = ?', params)
+        row = cursor.fetchone()
+        if row is not None:
+            cookie = SimpleCookie()
+            cookie.load(row[1].decode('utf-8'))
+            for cookie_name, morsel in cookie.items():
+                if cookie_name == 'sessionid':
+                    return morsel.value
 
     def get_questions(self, params={}):
         """
@@ -177,32 +282,32 @@ class Api:
         """
 
         user_node = node.select_one('div#userToolsNav')
-        if user_node:
-            user_stats = user_node.select_one('span.user-info')
-            if not user_stats:
-                return None
+        if not user_node:
+            return None
 
-            data = {}
+        user_stats = user_node.select_one('span.user-info')
+        if not user_stats:
+            return None
 
-            user_link = user_node.select_one('a')
-            link_href = user_link.get('href')
-            if user_link and link_href.find('/users/') != -1:
-                data['profile_url'] = self.get_link(link_href)
-                data['username'] = user_link.get_text()
-                data['id'] = re.compile('\/users\/(\d+)\/').match(link_href).group(1)
+        data = {}
 
-            reputation_node = user_node.select_one('a.reputation')
-            if reputation_node:
-                data['reputation'] = reputation_node.get_text().strip().replace('karma: ', '')
+        user_link = user_node.select_one('a')
+        link_href = user_link.get('href')
+        if user_link and link_href.find('/users/') != -1:
+            data['profileUrl'] = self.get_link(link_href)
+            data['username'] = user_link.get_text()
+            data['id'] = re.compile('\/users\/(\d+)\/').match(link_href).group(1)
 
-            for i in range(1, 4):
-                badge = user_stats.select_one('span.badge' + str(i))
-                if badge:
-                    data['badge' + str(i)] = badge.find_next_sibling('span', class_='badgecount').get_text()
+        reputation_node = user_node.select_one('a.reputation')
+        if reputation_node:
+            data['reputation'] = int(reputation_node.get_text().strip().replace('karma: ', ''))
 
-            return data
+        for i in range(1, 4):
+            badge = user_stats.select_one('span.badge' + str(i))
+            if badge:
+                data['badge' + str(i)] = int(badge.find_next_sibling('span', class_='badgecount').get_text())
 
-        return None
+        return data
 
     def _parse_user_page(self, html, user):
         """
@@ -210,21 +315,21 @@ class Api:
         """
 
         dom = BeautifulSoup(html, 'html.parser')
-        data = {}
 
-        # Parse logged in user
-        logged_user = self._parse_logged_in_user(dom)
-        Utils.log(pprint.pformat(logged_user))
+        # Parse logged in user from page header
+        data = self._parse_logged_in_user(dom)
+        if not data:
+            data = {}
 
         # Avatar
         avartar_node = dom.find('img', class_='gravatar')
         if avartar_node is not None:
-            data['avartar_url'] = self.get_link(avartar_node.get('src'))
+            data['avatarUrl'] = self.get_link(avartar_node.get('src'))
 
         # Karma
         score_node = dom.find('div', class_='scoreNumber')
         if score_node is not None:
-            data['score'] = score_node.get_text()
+            data['reputation'] = score_node.get_text()
 
         user_details_table = dom.find('table', class_='user-details')
         if user_details_table is not None:

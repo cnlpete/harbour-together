@@ -4,40 +4,25 @@ import Sailfish.Silica 1.0
 Item {
     id: root
 
-    property alias count: updateCount.text
-    property alias label: updateLabel.text
+    property alias label: labelElm.text
+    property alias labelColor: labelElm.color
+    property alias value: valueElm.text
 
     width: parent.width
-    height: updateCount.height
+    height: labelElm.height
 
     Label {
-        id: updateCount
-        x: Theme.paddingLarge
-        font.pixelSize: Theme.fontSizeHuge
+        id: labelElm
+        font.pixelSize: Theme.fontSizeLarge
     }
 
     Label {
-        id: updateLabel
-        x: Theme.paddingLarge
-        font.pixelSize: Theme.fontSizeExtraSmall
-        maximumLineCount: 2
-        wrapMode: Text.Wrap
-        fontSizeMode: Text.HorizontalFit
-        lineHeight: 0.8
-        height: implicitHeight/0.8
-        verticalAlignment: Text.AlignVCenter
+        id: valueElm
+        font.pixelSize: Theme.fontSizeLarge
         anchors {
             right: parent.right
-            left: updateCount.right
+            left: labelElm.right
             leftMargin: Theme.paddingMedium
-            baseline: updateCount.baseline
-            baselineOffset: lineCount > 1 ? -implicitHeight/2 : -(height-implicitHeight)/2
         }
-    }
-
-    OpacityRampEffect {
-        offset: 0.5
-        sourceItem: updateLabel
-        enabled: updateLabel.implicitWidth > Math.ceil(updateLabel.width)
     }
 }

@@ -43,8 +43,8 @@ Page {
             }
 
             MenuItem {
-                text: settings.username
-                onClicked: pageStack.push(Qt.resolvedUrl("UserPage.qml"), {user: {username: settings.username, profile_url: settings.profileUrl}})
+                text: app.username
+                onClicked: pageStack.push(Qt.resolvedUrl("UserPage.qml"), {user: {username: app.username, profile_url: app.profileUrl}})
                 visible: app.isLoggedIn && !compactView
             }
 
@@ -104,15 +104,6 @@ Page {
         })
 
         refresh()
-    }
-
-    Connections {
-        target: settings
-        onSessionIdChanged: {
-            if (!settings.sessionId && root.scope === 'followed'){
-                root.scope = 'all'
-            }
-        }
     }
 
     function refresh(){

@@ -32,9 +32,6 @@ Settings::Settings(QObject *parent) :
 void Settings::loadSettings()
 {
     m_update_delay = m_settings->value("update_delay", 1000*60*5).toInt();
-    m_session_id = m_settings->value("session_id").toString();
-    m_username = m_settings->value("username").toString();
-    m_profile_url = m_settings->value("profile_url").toString();
 }
 
 int Settings::updateDelay() const
@@ -48,47 +45,5 @@ void Settings::setUpdateDelay(int delay)
         m_update_delay = delay;
         m_settings->setValue("update_delay", delay);
         emit updateDelayChanged();
-    }
-}
-
-QString Settings::sessionId() const
-{
-    return m_session_id;
-}
-
-void Settings::setSessionId(QString sessionId)
-{
-    if (m_session_id != sessionId){
-        m_session_id = sessionId;
-        m_settings->setValue("session_id", sessionId);
-        emit sessionIdChanged();
-    }
-}
-
-QString Settings::username() const
-{
-    return m_username;
-}
-
-void Settings::setUsername(QString username)
-{
-    if (m_username != username){
-        m_username = username;
-        m_settings->setValue("username", username);
-        emit usernameChanged();
-    }
-}
-
-QString Settings::profileUrl() const
-{
-    return m_profile_url;
-}
-
-void Settings::setProfileUrl(QString profileUrl)
-{
-    if (m_profile_url != profileUrl){
-        m_profile_url = profileUrl;
-        m_settings->setValue("profile_url", profileUrl);
-        emit profileUrlChanged();
     }
 }

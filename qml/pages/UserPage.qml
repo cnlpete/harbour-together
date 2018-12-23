@@ -6,7 +6,7 @@ import "../js/utils.js" as Utils
 Page {
     id: root
 
-    property var user: ({id: '1856', username: 'Keeper-of-the-Keys'})
+    property var user: ({})
     property bool loading: true
     property bool hasError: false
 
@@ -27,13 +27,18 @@ Page {
             MenuItem {
                 text: qsTr("Logout")
                 onClicked: {
-                    settings.sessionId = ''
-                    settings.username = ''
-                    settings.profileUrl = ''
+                    app.isLoggedIn = false
+                    app.username = ''
+                    app.profileUrl = ''
+                    app.avatarUrl = ''
+                    app.reputation = 0
+                    app.badge1 = 0
+                    app.badge2 = 0
+                    app.badge3 = 0
                     py.call('app.api.do_logout')
                     pageStack.pop()
                 }
-                visible: user.username === settings.username
+                visible: user.username === app.username
             }
         }
 
@@ -136,10 +141,19 @@ Page {
         py.call('app.api.get_user', [user], function(rs){
             loading = false
 
-            avartar.source = rs.avartar_url
+            if (app.isLoggedIn && app.username === user.username){
+                app.avatarUrl = rs.avatarUrl
+                if (app.reputation) app.reputation = rs.reputation
+                if (rs.badge1) app.badge1 = rs.badge1
+                if (rs.badge2) app.badge2 = rs.badge2
+                if (rs.badge3) app.badge3 = rs.badge3
+                py.call('app.api.set_logged_in_user', [rs])
+            }
+
+            avartar.source = rs.avatarUrl
             created.value = rs.created
             last_seen.value = rs.last_seen_label
-            score.value = rs.score
+            score.value = rs.reputation
             question_section.count = rs.questions_count
             for (var i=0; i<rs.questions.length; i++){
                 questionsModel.append(rs.questions[i])
