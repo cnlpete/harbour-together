@@ -57,14 +57,14 @@ class Api:
 
     def do_vote(self, question_id, vote):
         """
-        Vote up/down a question.
-        @param: vote: 1 (up), 2 (down)
+        Vote up/down a question and answer.
+        @param: vote: 1 (question up), 2 (question down), 5 (answer up), 6 (answer down)
         """
 
         try:
             if not question_id:
                 raise Exception('Invalid parameter')
-            if vote != 1 and vote != 2:
+            if vote != 1 and vote != 2 and vote != 5 and vote != 6:
                 raise Exception('Invalid vote')
 
             vote_url = BASE_URL + 'vote'

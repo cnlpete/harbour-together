@@ -32,20 +32,26 @@ class Settings : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int updateDelay READ updateDelay WRITE setUpdateDelay NOTIFY updateDelayChanged)
+    Q_PROPERTY(int fontSize READ fontSize WRITE setFontSize NOTIFY fontSizeChanged)
 public:
     Settings(QObject *parent=0);
 
     int updateDelay() const;
     void setUpdateDelay(int delay);
 
+    int fontSize() const;
+    void setFontSize(int fontSize);
+
 signals:
     void updateDelayChanged();
+    void fontSizeChanged();
 
 private:
     Q_DISABLE_COPY(Settings)
 
     QSettings *m_settings;
-    int m_update_delay;
+    int m_updateDelay;
+    int m_fontSize;
 
     void loadSettings();
 };

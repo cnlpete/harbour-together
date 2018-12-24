@@ -19,7 +19,7 @@ Rectangle {
             textFormat: Text.StyledText
             color: Theme.secondaryColor
             linkColor: Theme.secondaryHighlightColor
-            font.pixelSize: Theme.fontSizeExtraSmall
+            font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeExtraSmall : Theme.fontSizeSmall
             wrapMode: Text.WordWrap
             anchors.left: parent.left
             anchors.leftMargin: 0
@@ -36,7 +36,7 @@ Rectangle {
             Label {
                 text: dataModel.author
                 color: Theme.highlightColor
-                font.pixelSize: Theme.fontSizeExtraSmall
+                font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeExtraSmall : Theme.fontSizeSmall
 
                 MouseArea {
                     anchors.fill: parent
@@ -49,7 +49,7 @@ Rectangle {
             Label {
                 text: dataModel.date_ago ? "(" + dataModel.date_ago + ")" : ""
                 color: Theme.secondaryColor
-                font.pixelSize: Theme.fontSizeExtraSmall
+                font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeExtraSmall : Theme.fontSizeSmall
             }
         }
     }

@@ -31,19 +31,34 @@ Settings::Settings(QObject *parent) :
 
 void Settings::loadSettings()
 {
-    m_update_delay = m_settings->value("update_delay", 1000*60*5).toInt();
+    m_updateDelay = m_settings->value("update_delay", 1000*60*5).toInt();
+    m_fontSize = m_settings->value("font_size", 2).toInt();
 }
 
 int Settings::updateDelay() const
 {
-    return m_update_delay;
+    return m_updateDelay;
 }
 
 void Settings::setUpdateDelay(int delay)
 {
-    if (m_update_delay != delay){
-        m_update_delay = delay;
+    if (m_updateDelay != delay){
+        m_updateDelay = delay;
         m_settings->setValue("update_delay", delay);
         emit updateDelayChanged();
+    }
+}
+
+int Settings::fontSize() const
+{
+    return m_fontSize;
+}
+
+void Settings::setFontSize(int fontSize)
+{
+    if (m_fontSize != fontSize){
+        m_fontSize = fontSize;
+        m_settings->setValue("font_size", fontSize);
+        emit fontSizeChanged();
     }
 }

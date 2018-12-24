@@ -24,6 +24,15 @@ Page {
             anchors.leftMargin: Theme.horizontalPageMargin
             anchors.rightMargin: Theme.horizontalPageMargin
 
+            PullDownMenu {
+                MenuItem {
+                    text: qsTr("View in browser")
+                    onClicked: {
+                        Utils.handleLink(question.url, true)
+                    }
+                }
+            }
+
             PageHeader {
                 title: question.title
             }

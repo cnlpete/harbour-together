@@ -2,12 +2,11 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import "../js/utils.js" as Utils
 
-Rectangle {
+Item {
     property variant dataModel
     property variant questionModel
 
     height: container.height
-    color: "transparent"
 
     Column {
         id: container
@@ -30,7 +29,7 @@ Rectangle {
                         left: parent.left
                         leftMargin: Theme.horizontalPageMargin
                         right: parent.right
-                        rightMargin: Theme.horizontalPageMargin
+                        rightMargin: Theme.paddingMedium
                     }
                 }
 
@@ -49,29 +48,62 @@ Rectangle {
         }
 
         Row {
-            width: parent.width
+            anchors.left: parent.left
+            anchors.leftMargin: Theme.horizontalPageMargin
+            anchors.right: parent.right
+            spacing: Theme.paddingMedium
 
             Column {
                 id: leftCol
-                width: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
-                height: 1
+                width: Theme.itemSizeSmall
+
+                VoteUpButton {
+                    id: voteUpBtn
+                    width: Theme.iconSizeMedium
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    onClicked: {
+                        if (loading) return
+                        loading = true
+
+                        py.call('app.api.do_vote', [dataModel.id, 5], function(rs){
+                            loading = false
+
+                            if (rs && rs.success === 1){
+                                voteLabel.text = rs.count
+                            }
+                        })
+                    }
+                }
 
                 Label {
-                    id: voteLbl
-                    text: "\uf164 " + dataModel.vote_count_label
-                    color: Theme.primaryColor
-                    font.pixelSize: Theme.fontSizeSmall
-                    width: Theme.itemSizeSmall
-                    anchors.left: parent.left
-                    anchors.leftMargin: Theme.horizontalPageMargin
+                    id: voteLabel
+                    text: dataModel.vote_count || '0'
                     horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
+                    width: parent.width
+                }
+
+                VoteDownButton {
+                    id: voteDownBtn
+                    width: Theme.iconSizeMedium
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    onClicked: {
+                        if (loading) return
+                        loading = true
+
+                        py.call('app.api.do_vote', [dataModel.id, 6], function(rs){
+                            loading = false
+
+                            if (rs && rs.success === 1){
+                                voteLabel.text = rs.count
+                            }
+                        })
+                    }
                 }
             }
 
             Column {
                 id: rightCol
-                width: parent.width - leftCol.width
+                width: parent.width - leftCol.width - Theme.paddingMedium
 
                 Label {
                     id: text
@@ -79,7 +111,7 @@ Rectangle {
                     color: Theme.primaryColor
                     linkColor: Theme.highlightColor
                     wrapMode: Text.WordWrap
-                    font.pixelSize: Theme.fontSizeSmall
+                    font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeSmall : Theme.fontSizeMedium
                     width: parent.width
                     onLinkActivated: Utils.handleLink(link)
                 }
@@ -89,23 +121,28 @@ Rectangle {
         Hr {
             width: parent.width
             paddingBottom: Theme.paddingMedium
+            paddingTop: Theme.paddingMedium
         }
 
-        Repeater {
+        ListView {
+            id: commentsListView
+            interactive: false
+            height: contentHeight
+            width: parent.width
+
             model: ListModel {
                 id: commentsModel
             }
 
-            Rectangle {
-                width: parent.width
+            delegate: Item {
+                width: commentsListView.width
                 height: comments.height + (commentsHr.visible ? commentsHr.height : 0)
-                color: "transparent"
 
                 Comment {
                     id: comments
                     dataModel: model
                     anchors.left: parent.left
-                    anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
+                    anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
                     anchors.right: parent.right
                     anchors.rightMargin: Theme.paddingMedium
 
@@ -125,17 +162,14 @@ Rectangle {
         CommentMoreButton {
             visible: false
             anchors.left: parent.left
-            anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
+            anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
             anchors.right: parent.right
-            onClicked: {
-                console.log("more")
-            }
         }
 
         CommentButton {
             label: qsTr("no comment")
             anchors.left: parent.left
-            anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
+            anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
             anchors.right: parent.right
             padding: Theme.paddingMedium
             visible: !commentsModel.count

@@ -27,7 +27,7 @@ Rectangle {
         Label {
             text: label
             color: mouse.pressed ? Theme.secondaryHighlightColor : Theme.secondaryColor
-            font.pixelSize: Theme.fontSizeExtraSmall
+            font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeExtraSmall : Theme.fontSizeSmall
             width: parent.width
         }
     }

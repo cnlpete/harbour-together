@@ -66,7 +66,7 @@ Page {
                             Label {
                                 id: tagLbl
                                 text: model.name
-                                font.pixelSize: Theme.fontSizeSmall
+                                font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeSmall : Theme.fontSizeMedium
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 anchors.verticalCenter: parent.verticalCenter
                                 color: tagMouse.pressed ? Theme.primaryColor : Theme.highlightColor
@@ -94,7 +94,7 @@ Page {
                     text: question.body || ""
                     color: Theme.primaryColor
                     wrapMode: Text.WordWrap
-                    font.pixelSize: Theme.fontSizeSmall
+                    font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeSmall : Theme.fontSizeMedium
                     textFormat: Text.StyledText
                     linkColor: Theme.highlightColor
                     anchors {
@@ -140,7 +140,7 @@ Page {
                             }
                         }
                         color: Theme.primaryColor
-                        font.pixelSize: Theme.fontSizeSmall
+                        font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeSmall : Theme.fontSizeMedium
                         anchors.verticalCenter: parent.verticalCenter
                     }
                 }
@@ -192,12 +192,11 @@ Page {
                         anchors.left: parent.left
                         anchors.leftMargin: Theme.horizontalPageMargin
                         anchors.right: parent.right
-                        height: Math.max(voteCol.height, commentsListView.height)
+                        spacing: Theme.paddingMedium
 
-                        Item {
+                        Column {
                             id: voteCol
                             width: Theme.itemSizeSmall
-                            height: voteUpBtn.height + voteDownBtn.height + voteLabel.height
 
                             VoteUpButton {
                                 id: voteUpBtn
@@ -211,7 +210,7 @@ Page {
                                         loading = false
 
                                         if (rs && rs.success === 1){
-                                            question.score = rs.count
+                                            voteLabel.text = rs.count
                                         }
                                     })
                                 }
@@ -220,7 +219,6 @@ Page {
                             Label {
                                 id: voteLabel
                                 text: question.score || '0'
-                                anchors.top: voteUpBtn.bottom
                                 horizontalAlignment: Text.AlignHCenter
                                 width: parent.width
                             }
@@ -229,7 +227,6 @@ Page {
                                 id: voteDownBtn
                                 width: Theme.iconSizeMedium
                                 anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.top: voteLabel.bottom
                                 onClicked: {
                                     if (loading) return
                                     loading = true
@@ -238,55 +235,56 @@ Page {
                                         loading = false
 
                                         if (rs && rs.success === 1){
-                                            question.score = rs.count
+                                            voteLabel.text = rs.count
                                         }
                                     })
                                 }
                             }
                         }
 
-                        ListView {
-                            id: commentsListView
-                            interactive: false
-                            height: contentHeight
-                            width: parent.width - voteCol.width
+                        Column {
+                            width: parent.width - voteCol.width - Theme.paddingMedium
 
-                            model: ListModel {
-                                id: commentsModel
-                            }
-
-                            delegate: Item {
+                            ListView {
+                                id: commentsListView
+                                interactive: false
+                                height: contentHeight
                                 width: parent.width
-                                height: comments.height + (commentsHr.visible ? commentsHr.height : 0)
 
-                                Comment {
-                                    id: comments
-                                    dataModel: model
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: Theme.paddingMedium
-                                    anchors.right: parent.right
-                                    anchors.rightMargin: Theme.paddingMedium
+                                model: ListModel {
+                                    id: commentsModel
+                                }
 
-                                    Hr {
-                                        id: commentsHr
-                                        paddingTop: Theme.paddingMedium
-                                        paddingBottom: Theme.paddingMedium
-                                        anchors.top: parent.bottom
+                                delegate: Item {
+                                    width: parent.width
+                                    height: comments.height + (commentsHr.visible ? commentsHr.height : 0)
+
+                                    Comment {
+                                        id: comments
+                                        dataModel: model
                                         anchors.left: parent.left
                                         anchors.right: parent.right
-                                        visible: index < commentsModel.count - 1
+                                        anchors.rightMargin: Theme.paddingMedium
+
+                                        Hr {
+                                            id: commentsHr
+                                            paddingTop: Theme.paddingMedium
+                                            paddingBottom: Theme.paddingMedium
+                                            anchors.top: parent.bottom
+                                            anchors.left: parent.left
+                                            anchors.right: parent.right
+                                            visible: index < commentsModel.count - 1
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        CommentButton {
-                            label: qsTr("no comment")
-                            anchors.left: parent.left
-                            anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
-                            anchors.right: parent.right
-                            padding: Theme.paddingMedium
-                            visible: false//!commentsModel.count
+                            CommentButton {
+                                label: qsTr("no comment")
+                                width: parent.width
+                                padding: Theme.paddingMedium
+                                visible: !commentsModel.count
+                            }
                         }
                     }
 
@@ -300,7 +298,7 @@ Page {
                         text: question ? (question.answer_count + " " + (qsTr("Answers"))) : ""
                         color: Theme.primaryColor
                         wrapMode: Text.WordWrap
-                        font.pixelSize: Theme.fontSizeSmall
+                        font.pixelSize: Theme.fontSizeMedium
                         font.bold: true
                         anchors.left: parent.left
                         anchors.leftMargin: Theme.horizontalPageMargin
@@ -311,22 +309,20 @@ Page {
                         paddingTop: Theme.paddingLarge
                     }
 
-                    Repeater {
+                    ListView {
+                        interactive: false
+                        width: parent.width
+                        height: contentHeight
+
                         model: ListModel {
                             id: answerModel
                         }
 
-                        Rectangle {
-                            width: parent.width - Theme.paddingSmall
-                            height: answer.height
-                            color: "transparent"
-
-                            Answer {
-                                id: answer
-                                dataModel: model
-                                questionModel: question
-                                width: parent.width
-                            }
+                        delegate: Answer {
+                            id: answer
+                            dataModel: model
+                            questionModel: question
+                            width: parent.width
                         }
                     }
                 }

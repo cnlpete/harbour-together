@@ -62,7 +62,7 @@ Rectangle {
                         else return ""
                     }
                     color: Theme.primaryColor
-                    font.pixelSize: Theme.fontSizeSmall
+                    font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeSmall : Theme.fontSizeMedium
                 }
 
                 Label{
@@ -87,7 +87,7 @@ Rectangle {
                     }
                     textFormat: Text.RichText
                     color: Theme.primaryColor
-                    font.pixelSize: Theme.fontSizeExtraSmall
+                    font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeExtraSmall : Theme.fontSizeSmall
                 }
             }
 
@@ -107,7 +107,7 @@ Rectangle {
                         else return ""
                     }
                     color: Theme.secondaryColor
-                    font.pixelSize: Theme.fontSizeSmall
+                    font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeSmall : Theme.fontSizeMedium
                     width: parent.width
                     horizontalAlignment: Text.AlignRight
                 }
@@ -116,7 +116,7 @@ Rectangle {
                     id: dateLbl
                     text: dataModel && dataModel.date_ago ? dataModel.date_ago : ""
                     color: Theme.secondaryColor
-                    font.pixelSize: Theme.fontSizeExtraSmall
+                    font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeExtraSmall : Theme.fontSizeSmall
                     width: parent.width
                     horizontalAlignment: Text.AlignRight
                 }

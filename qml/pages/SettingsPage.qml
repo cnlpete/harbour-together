@@ -23,37 +23,46 @@ Page {
 
         model: VisualItemModel {
             ComboBox {
-                id: updateIntervalCombo
+                id: updateIntervalComboBox
                 width: listView.width
                 label: qsTr("Updates check interval")
-
                 menu: ContextMenu {
                     MenuItem {
-                        text: "No update"
-                        onClicked: {
-                            settings.updateDelay = 0
-                        }
+                        text: qsTr("No update")
+                        onClicked: settings.updateDelay = 0
                     }
 
                     MenuItem {
                         text: qsTr("5 minutes")
-                        onClicked: {
-                            settings.updateDelay = 1000*60*5
-                        }
+                        onClicked: settings.updateDelay = 1000*60*5
                     }
 
                     MenuItem {
                         text: qsTr("30 minutes")
-                        onClicked: {
-                            settings.updateDelay = 1000*60*30
-                        }
+                        onClicked: settings.updateDelay = 1000*60*30
                     }
 
                     MenuItem {
                         text: qsTr("1 hour")
-                        onClicked: {
-                            settings.updateDelay = 1000*60*60
-                        }
+                        onClicked: settings.updateDelay = 1000*60*60
+                    }
+                }
+            }
+
+            ComboBox {
+                id: fontSizeComboBox
+                width: listView.width
+                label: qsTr('Font size')
+                description: qsTr('Change text size in question view page')
+                menu: ContextMenu {
+                    MenuItem {
+                        text: qsTr('Normal')
+                        onClicked: settings.fontSize = 1
+                    }
+
+                    MenuItem {
+                        text: qsTr('Big')
+                        onClicked: settings.fontSize = 2
                     }
                 }
             }
@@ -63,10 +72,15 @@ Page {
 
         Component.onCompleted: {
             switch (settings.updateDelay){
-            case 0: updateIntervalCombo.currentIndex = 0; break
-            case 1000*60*5: updateIntervalCombo.currentIndex = 1; break
-            case 1000*60*30: updateIntervalCombo.currentIndex = 2; break
-            case 1000*60*60: updateIntervalCombo.currentIndex = 3; break
+            case 0: updateIntervalComboBox.currentIndex = 0; break
+            case 1000*60*5: updateIntervalComboBox.currentIndex = 1; break
+            case 1000*60*30: updateIntervalComboBox.currentIndex = 2; break
+            case 1000*60*60: updateIntervalComboBox.currentIndex = 3; break
+            }
+
+            switch (settings.fontSize){
+            case 1: fontSizeComboBox.currentIndex = 0; break
+            case 2: fontSizeComboBox.currentIndex = 1; break
             }
         }
     }
