@@ -9,19 +9,28 @@ Item {
     property alias value: valueElm.text
 
     width: parent.width
-    height: labelElm.height
+    height: labelWrapper.height
 
-    Label {
-        id: labelElm
-        font.pixelSize: Theme.fontSizeLarge
+    Item {
+        id: labelWrapper
+        width: Theme.iconSizeMedium - Theme.paddingLarge
+        height: labelElm.height
+
+        Label {
+            id: labelElm
+            font.pixelSize: Theme.fontSizeLarge
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+        }
     }
 
     Label {
         id: valueElm
         font.pixelSize: Theme.fontSizeLarge
+        maximumLineCount: 1
         anchors {
             right: parent.right
-            left: labelElm.right
+            left: labelWrapper.right
             leftMargin: Theme.paddingMedium
         }
     }

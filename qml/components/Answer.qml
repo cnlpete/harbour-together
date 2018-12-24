@@ -53,7 +53,7 @@ Rectangle {
 
             Column {
                 id: leftCol
-                width: Theme.horizontalPageMargin + Theme.itemSizeSmall
+                width: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
                 height: 1
 
                 Label {
@@ -111,7 +111,6 @@ Rectangle {
 
                     Hr {
                         id: commentsHr
-                        opacity: 0.4
                         paddingTop: Theme.paddingMedium
                         paddingBottom: Theme.paddingMedium
                         anchors.top: parent.bottom

@@ -55,6 +55,32 @@ class Api:
             Utils.log(traceback.format_exc())
             self.cache = None
 
+    def do_vote(self, question_id, vote):
+        """
+        Vote up/down a question.
+        @param: vote: 1 (up), 2 (down)
+        """
+
+        try:
+            if not question_id:
+                raise Exception('Invalid parameter')
+            if vote != 1 and vote != 2:
+                raise Exception('Invalid vote')
+
+            vote_url = BASE_URL + 'vote'
+            response = self.request('POST', vote_url, params={'type': int(vote), 'postId': int(question_id)})
+            response = response.json()
+            if response['success'] == 0:
+                if response['message']:
+                    raise Exception(response['message'])
+                else:
+                    raise Exception('Something went wrong. Please try again')
+            else:
+                return response
+        except Exception as e:
+            Utils.log(traceback.format_exc())
+            Utils.error(e.args[0])
+
     def get_logged_in_user(self):
         """
         Get logged in user from cache

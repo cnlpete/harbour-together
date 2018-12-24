@@ -4,11 +4,12 @@ import "../components"
 import "../js/utils.js" as Utils
 
 Page {
+    id: root
+
     property variant question: ({})
     property int p: 1
     property string sort: "votes"
     property bool loading: false
-
 
     allowedOrientations: Orientation.All
 
@@ -187,45 +188,106 @@ Page {
                         paddingBottom: Theme.paddingMedium
                     }
 
-                    Repeater {
-                        model: ListModel {
-                            id: commentsModel
-                        }
+                    Row {
+                        anchors.left: parent.left
+                        anchors.leftMargin: Theme.horizontalPageMargin
+                        anchors.right: parent.right
+                        height: Math.max(voteCol.height, commentsListView.height)
 
-                        Rectangle {
-                            width: parent.width
-                            height: comments.height + (commentsHr.visible ? commentsHr.height : 0)
-                            color: "transparent"
+                        Item {
+                            id: voteCol
+                            width: Theme.itemSizeSmall
+                            height: voteUpBtn.height + voteDownBtn.height + voteLabel.height
 
-                            Comment {
-                                id: comments
-                                dataModel: model
-                                anchors.left: parent.left
-                                anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
-                                anchors.right: parent.right
-                                anchors.rightMargin: Theme.paddingMedium
+                            VoteUpButton {
+                                id: voteUpBtn
+                                width: Theme.iconSizeMedium
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                onClicked: {
+                                    if (loading) return
+                                    loading = true
 
-                                Hr {
-                                    id: commentsHr
-                                    opacity: 0.4
-                                    paddingTop: Theme.paddingMedium
-                                    paddingBottom: Theme.paddingMedium
-                                    anchors.top: parent.bottom
-                                    anchors.left: parent.left
-                                    anchors.right: parent.right
-                                    visible: index < commentsModel.count - 1
+                                    py.call('app.api.do_vote', [question.id, 1], function(rs){
+                                        loading = false
+
+                                        if (rs && rs.success === 1){
+                                            question.score = rs.count
+                                        }
+                                    })
+                                }
+                            }
+
+                            Label {
+                                id: voteLabel
+                                text: question.score || '0'
+                                anchors.top: voteUpBtn.bottom
+                                horizontalAlignment: Text.AlignHCenter
+                                width: parent.width
+                            }
+
+                            VoteDownButton {
+                                id: voteDownBtn
+                                width: Theme.iconSizeMedium
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.top: voteLabel.bottom
+                                onClicked: {
+                                    if (loading) return
+                                    loading = true
+
+                                    py.call('app.api.do_vote', [question.id, 2], function(rs){
+                                        loading = false
+
+                                        if (rs && rs.success === 1){
+                                            question.score = rs.count
+                                        }
+                                    })
                                 }
                             }
                         }
-                    }
 
-                    CommentButton {
-                        label: qsTr("no comment")
-                        anchors.left: parent.left
-                        anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
-                        anchors.right: parent.right
-                        padding: Theme.paddingMedium
-                        visible: !commentsModel.count
+                        ListView {
+                            id: commentsListView
+                            interactive: false
+                            height: contentHeight
+                            width: parent.width - voteCol.width
+
+                            model: ListModel {
+                                id: commentsModel
+                            }
+
+                            delegate: Item {
+                                width: parent.width
+                                height: comments.height + (commentsHr.visible ? commentsHr.height : 0)
+
+                                Comment {
+                                    id: comments
+                                    dataModel: model
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: Theme.paddingMedium
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: Theme.paddingMedium
+
+                                    Hr {
+                                        id: commentsHr
+                                        paddingTop: Theme.paddingMedium
+                                        paddingBottom: Theme.paddingMedium
+                                        anchors.top: parent.bottom
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        visible: index < commentsModel.count - 1
+                                    }
+                                }
+                            }
+                        }
+
+                        CommentButton {
+                            label: qsTr("no comment")
+                            anchors.left: parent.left
+                            anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall
+                            anchors.right: parent.right
+                            padding: Theme.paddingMedium
+                            visible: false//!commentsModel.count
+                        }
                     }
 
                     Hr {
@@ -310,6 +372,9 @@ Page {
             loading = true
 
             py.call('app.api.get_question', [{id: question.id, url: question.url, author: question.author, page: p, sort: sort}], function(rs){
+                pushUpMenu.busy = false
+                loading = false
+
                 if (rs.followers){
                     question.followers = rs.followers
                 }
@@ -339,9 +404,6 @@ Page {
                 }else{
                     pushUpMenu.visible = false
                 }
-
-                pushUpMenu.busy = false
-                loading = false
 
                 pageStack.pushAttached(Qt.resolvedUrl("QuestionExtrasPage.qml"), {question: question})
             })

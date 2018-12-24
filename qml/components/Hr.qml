@@ -1,18 +1,18 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 
-Rectangle {
+Item {
     property int paddingTop: 0
     property int paddingBottom: 0
+    property alias color: separator.color
 
-    color: "transparent"
-    height: 1 + paddingTop + paddingBottom
-    opacity: 0.8
+    height: separator.height + paddingTop + paddingBottom
 
-    Rectangle{
-        height: 1
+    Separator {
+        id: separator
+        color: Theme.secondaryColor
         width: parent.width
-        color: Theme.primaryColor
+        horizontalAlignment: Qt.AlignCenter
         anchors.topMargin: paddingTop
         anchors.bottomMargin: paddingBottom
         anchors.verticalCenter: {

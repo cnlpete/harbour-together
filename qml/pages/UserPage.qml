@@ -143,7 +143,7 @@ Page {
 
             if (app.isLoggedIn && app.username === user.username){
                 app.avatarUrl = rs.avatarUrl
-                if (app.reputation) app.reputation = rs.reputation
+                if (rs.reputation) app.reputation = rs.reputation
                 if (rs.badge1) app.badge1 = rs.badge1
                 if (rs.badge2) app.badge2 = rs.badge2
                 if (rs.badge3) app.badge3 = rs.badge3

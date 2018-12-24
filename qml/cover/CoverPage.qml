@@ -64,11 +64,10 @@ CoverBackground {
 
         Label {
             id: statusLabel
-            text: loading ? qsTr("Updating...") : qsTr("Up-to-date")
-            x: Theme.paddingLarge
-            fontSizeMode: Text.VerticalFit
+            visible: loading
+            text: qsTr("Updating...")
             font.pixelSize: Theme.fontSizeLarge
-            width: parent.width - Theme.paddingLarge
+            width: parent.width
             color: Theme.highlightColor
         }
     }
