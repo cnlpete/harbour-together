@@ -10,7 +10,7 @@ CoverBackground {
         anchors.fill: parent
         opacity: 0.5
         color: 'black'
-        visible: app.isLoggedIn
+        visible: app.isLoggedIn && settings.showAvatarCover
 
         Image {
             id: avatar
@@ -31,6 +31,14 @@ CoverBackground {
         anchors.top: parent.top
         anchors.topMargin: Theme.paddingMedium
         visible: app.isLoggedIn
+
+        Label {
+            width: parent.width
+            horizontalAlignment: Text.AlignHCenter
+            text: app.username
+            visible: !!app.username
+            font.pixelSize: Theme.fontSizeLarge
+        }
 
         CoverLabel {
             id: karmaLabel

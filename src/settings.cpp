@@ -33,6 +33,7 @@ void Settings::loadSettings()
 {
     m_updateDelay = m_settings->value("update_delay", 1000*60*5).toInt();
     m_fontSize = m_settings->value("font_size", 2).toInt();
+    m_showAvatarCover = m_settings->value("show_avatar_cover", true).toBool();
 }
 
 int Settings::updateDelay() const
@@ -60,5 +61,19 @@ void Settings::setFontSize(int fontSize)
         m_fontSize = fontSize;
         m_settings->setValue("font_size", fontSize);
         emit fontSizeChanged();
+    }
+}
+
+bool Settings::showAvatarCover() const
+{
+    return m_showAvatarCover;
+}
+
+void Settings::setShowAvatarCover(bool flag)
+{
+    if (m_showAvatarCover != flag){
+        m_showAvatarCover = flag;
+        m_settings->setValue("show_avatar_cover", flag);
+        emit showAvatarCoverChanged();
     }
 }

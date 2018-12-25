@@ -492,7 +492,7 @@ class Api:
         # Parse question's answers
         data['answers'] = self.parse_answer(dom)
 
-        # Parse question's extras
+        # Parse followers
         data['followers'] = 0
         favorite_node = dom.find('div', attrs={'id': 'favorite-number'})
         if favorite_node is not None:
@@ -502,11 +502,13 @@ class Api:
             if favorite_result:
                 data['followers'] = int(favorite_result.group(1))
 
+        # Parse following status
         data['following'] = False
         favorite_btn_node = dom.select_one('a.button.followed')
         if favorite_btn_node is not None and favorite_btn_node.get('alt') == 'click to unfollow this question':
             data['following'] = True
 
+        # Parse related questions
         data['related'] = []
         related_nodes = dom.find('div', class_='questions-related')
         if related_nodes is not None:
@@ -516,6 +518,17 @@ class Api:
                 item['title'] = a_node.get_text()
                 item['url'] = self.get_link(a_node.get('href'))
                 data['related'].append(item)
+
+        # Parse votes
+        data['votes'] = {}
+        for script in dom.select('script'):
+            script_text = script.get_text()
+            if not script_text:
+                continue
+            if script_text.find('var votes = {};') != -1:
+                for vote in re.findall('votes\[\'(\d+)\'\][ ]*=[ ]*([-1]+)', script_text):
+                    data['votes'][vote[0]] = int(vote[1])
+                break
 
         return data
 

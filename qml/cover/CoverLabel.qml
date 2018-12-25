@@ -16,15 +16,17 @@ Item {
         width: Theme.iconSizeSmall
         font.pixelSize: Theme.fontSizeMedium
         horizontalAlignment: Text.AlignHCenter
+        anchors.verticalCenter: parent.verticalCenter
     }
 
     Label {
         id: valueElm
-        font.pixelSize: Theme.fontSizeMedium
+        font.pixelSize: Theme.fontSizeLarge
         anchors {
             right: parent.right
             left: labelElm.right
             leftMargin: Theme.paddingMedium
+            anchors.verticalCenter: parent.verticalCenter
         }
     }
 }

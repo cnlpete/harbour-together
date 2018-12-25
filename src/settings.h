@@ -33,6 +33,7 @@ class Settings : public QObject
     Q_OBJECT
     Q_PROPERTY(int updateDelay READ updateDelay WRITE setUpdateDelay NOTIFY updateDelayChanged)
     Q_PROPERTY(int fontSize READ fontSize WRITE setFontSize NOTIFY fontSizeChanged)
+    Q_PROPERTY(bool showAvatarCover READ showAvatarCover WRITE setShowAvatarCover NOTIFY showAvatarCoverChanged)
 public:
     Settings(QObject *parent=0);
 
@@ -42,9 +43,13 @@ public:
     int fontSize() const;
     void setFontSize(int fontSize);
 
+    bool showAvatarCover() const;
+    void setShowAvatarCover(bool flag);
+
 signals:
     void updateDelayChanged();
     void fontSizeChanged();
+    void showAvatarCoverChanged();
 
 private:
     Q_DISABLE_COPY(Settings)
@@ -52,6 +57,7 @@ private:
     QSettings *m_settings;
     int m_updateDelay;
     int m_fontSize;
+    bool m_showAvatarCover;
 
     void loadSettings();
 };

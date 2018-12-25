@@ -26,6 +26,7 @@ Page {
                 id: updateIntervalComboBox
                 width: listView.width
                 label: qsTr("Updates check interval")
+                visible: false
                 menu: ContextMenu {
                     MenuItem {
                         text: qsTr("No update")
@@ -49,6 +50,10 @@ Page {
                 }
             }
 
+            SectionHeader {
+                text: qsTr("Appearance")
+            }
+
             ComboBox {
                 id: fontSizeComboBox
                 width: listView.width
@@ -56,7 +61,7 @@ Page {
                 description: qsTr('Change text size in question view page')
                 menu: ContextMenu {
                     MenuItem {
-                        text: qsTr('Normal')
+                        text: qsTr('Small')
                         onClicked: settings.fontSize = 1
                     }
 
@@ -65,6 +70,17 @@ Page {
                         onClicked: settings.fontSize = 2
                     }
                 }
+            }
+
+            SectionHeader {
+                text: qsTr("Cover")
+            }
+
+            TextSwitch {
+                text: qsTr('Show avatar on cover')
+                description: qsTr('Show current logged in user\'s avatar on cover page')
+                checked: settings.showAvatarCover
+                onClicked: settings.showAvatarCover = checked
             }
         }
 

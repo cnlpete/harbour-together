@@ -61,6 +61,7 @@ Item {
                     id: voteUpBtn
                     width: Theme.iconSizeMedium
                     anchors.horizontalCenter: parent.horizontalCenter
+                    vote: votes[dataModel.id] === 1
                     onClicked: {
                         if (loading) return
                         loading = true
@@ -70,6 +71,7 @@ Item {
 
                             if (rs && rs.success === 1){
                                 voteLabel.text = rs.count
+                                vote = !rs.status
                             }
                         })
                     }
@@ -86,6 +88,7 @@ Item {
                     id: voteDownBtn
                     width: Theme.iconSizeMedium
                     anchors.horizontalCenter: parent.horizontalCenter
+                    vote: votes[dataModel.id] === -1
                     onClicked: {
                         if (loading) return
                         loading = true
@@ -95,6 +98,7 @@ Item {
 
                             if (rs && rs.success === 1){
                                 voteLabel.text = rs.count
+                                vote = !rs.status
                             }
                         })
                     }

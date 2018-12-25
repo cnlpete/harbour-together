@@ -10,6 +10,7 @@ Page {
     property int p: 1
     property string sort: "votes"
     property bool loading: false
+    property var votes: ({})
 
     allowedOrientations: Orientation.All
 
@@ -202,6 +203,7 @@ Page {
                                 id: voteUpBtn
                                 width: Theme.iconSizeMedium
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                vote: votes[question.id] === 1
                                 onClicked: {
                                     if (loading) return
                                     loading = true
@@ -211,6 +213,8 @@ Page {
 
                                         if (rs && rs.success === 1){
                                             voteLabel.text = rs.count
+                                            question.score = rs.count
+                                            vote = !rs.status
                                         }
                                     })
                                 }
@@ -227,6 +231,7 @@ Page {
                                 id: voteDownBtn
                                 width: Theme.iconSizeMedium
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                vote: votes[question.id] === -1
                                 onClicked: {
                                     if (loading) return
                                     loading = true
@@ -236,6 +241,8 @@ Page {
 
                                         if (rs && rs.success === 1){
                                             voteLabel.text = rs.count
+                                            question.score = rs.count
+                                            vote = !rs.status
                                         }
                                     })
                                 }
@@ -399,6 +406,9 @@ Page {
                     pushUpMenu.visible = true
                 }else{
                     pushUpMenu.visible = false
+                }
+                if (rs.votes){
+                    votes = rs.votes
                 }
 
                 pageStack.pushAttached(Qt.resolvedUrl("QuestionExtrasPage.qml"), {question: question})
