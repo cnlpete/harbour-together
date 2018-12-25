@@ -366,6 +366,7 @@ class Api:
                     if created_node is not None:
                         created_datetime = self._parse_datetime(created_node.get('title'))
                         data['created'] = created_datetime.strftime('%Y-%m-%d')
+                        data['created_label'] = timeago.format(created_datetime, datetime.now(TIMEZONE))
                 elif raw_text.find('last seen') != -1:
                     last_seen_node = tr.find('abbr', class_='timeago')
                     if last_seen_node is not None:
@@ -497,7 +498,7 @@ class Api:
         favorite_node = dom.find('div', attrs={'id': 'favorite-number'})
         if favorite_node is not None:
             favorite_text = favorite_node.get_text().strip()
-            favorite_pattern = re.compile('(\d+) followers')
+            favorite_pattern = re.compile('(\d+) follower[s]*')
             favorite_result = favorite_pattern.match(favorite_text)
             if favorite_result:
                 data['followers'] = int(favorite_result.group(1))

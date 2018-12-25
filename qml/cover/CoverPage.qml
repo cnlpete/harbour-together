@@ -34,7 +34,7 @@ CoverBackground {
 
         Label {
             width: parent.width
-            horizontalAlignment: Text.AlignHCenter
+            //horizontalAlignment: Text.AlignHCenter
             text: app.username
             visible: !!app.username
             font.pixelSize: Theme.fontSizeLarge

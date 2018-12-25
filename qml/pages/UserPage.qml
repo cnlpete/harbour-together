@@ -151,7 +151,7 @@ Page {
             }
 
             avartar.source = rs.avatarUrl
-            created.value = rs.created
+            created.value = rs.created_label
             last_seen.value = rs.last_seen_label
             score.value = rs.reputation
             question_section.count = rs.questions_count

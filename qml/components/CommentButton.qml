@@ -1,7 +1,7 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 
-Rectangle {
+Item {
     id: root
 
     property int padding: 0
@@ -9,7 +9,6 @@ Rectangle {
 
     signal clicked()
 
-    color: "transparent"
     height: content.height + (2 * padding)
 
     Row {

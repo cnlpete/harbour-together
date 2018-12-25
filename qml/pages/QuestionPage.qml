@@ -280,17 +280,15 @@ Page {
                                             anchors.top: parent.bottom
                                             anchors.left: parent.left
                                             anchors.right: parent.right
-                                            visible: index < commentsModel.count - 1
                                         }
                                     }
                                 }
                             }
 
                             CommentButton {
-                                label: qsTr("no comment")
+                                label: qsTr("add a comment")
                                 width: parent.width
                                 padding: Theme.paddingMedium
-                                visible: !commentsModel.count
                             }
                         }
                     }

@@ -26,7 +26,7 @@ Item {
             right: parent.right
             left: labelElm.right
             leftMargin: Theme.paddingMedium
-            anchors.verticalCenter: parent.verticalCenter
+            verticalCenter: parent.verticalCenter
         }
     }
 }
