@@ -55,6 +55,47 @@ class Api:
             Utils.log(traceback.format_exc())
             self.cache = None
 
+    def do_comment(self, data={}):
+        """
+        Submit comment on question/answer
+        """
+
+        try:
+            comment = data['comment'] if 'comment' in data else ''
+            post_type = data['post_type'] if 'post_type' in data else ''
+            post_id = int(data['post_id']) if 'post_id' in data else ''
+
+            if not comment or not post_type or not post_id:
+                raise Exception('Invalid parameter')
+
+            submit_comment_url = BASE_URL + 'post_comments/'
+            reponse = self.request('POST', submit_comment_url, params={
+                'comment': comment, 'post_type': post_type, 'post_id': post_id
+            })
+            reponse = reponse.json()
+            output = []
+            for item in reponse:
+                output.append(self._convert_comment(item))
+            return output
+        except Exception as e:
+            Utils.log(traceback.format_exc())
+            Utils.error(e.args[0])
+
+    def _convert_comment(self, data):
+        """
+        Convert comment data JSON for mobile display
+        """
+
+        output = {}
+        output['id'] = int(data['id'])
+        output['author'] = data['user_display_name']
+        output['profile_url'] = data['user_url']
+        output['date'] = data['comment_added_at']
+        output['date_ago'] = timeago.format(self._parse_datetime(data['comment_added_at']), datetime.now(TIMEZONE))
+        output['content'] = self.convert_content(data['html'])
+
+        return output
+
     def do_vote(self, question_id, vote):
         """
         Vote up/down a question and answer.
@@ -628,6 +669,9 @@ class Api:
         Parse body of question, answer or comment
         """
 
+        if node is None:
+            return ''
+
         for image_node in node.find_all('img'):
             source = image_node.get('src')
             image_node['src'] = self.get_link(source)
@@ -656,11 +700,16 @@ class Api:
         data = []
 
         if node is not None:
+            comment_id_pattern = re.compile('comment-(\d+)')
             for comment_node in node.find_all('div', class_='comment'):
+                item = {}
+                
+                comment_id_result = comment_id_pattern.match(comment_node.get('id'))
+                if comment_id_result:
+                    item['id'] = int(comment_id_result.group(1))
+                    
                 comment_body_node = comment_node.find('div', class_='comment-body')
                 if comment_body_node is not None:
-                    item = {}
-
                     item['content'] = ''
                     for p in comment_body_node.find_all(recursive=False):
                         if 'class' in p.attrs and 'author' in p['class']:
@@ -783,6 +832,8 @@ class Api:
         method = method.upper();
 
         Utils.log(method + ': ' + url)
+        if method == 'POST':
+            Utils.log('Params: ' + pprint.pformat(params))
 
         try:
             cookies = {}
@@ -796,6 +847,8 @@ class Api:
                 response = requests.post(url, data=params, cookies=cookies, timeout=5, headers=headers)
             
             Utils.log('Response code: ' + str(response.status_code))
+            if response.status_code != 200:
+                raise Exception(str(response.status_code))
 
             if callback:
                 return getattr(self, callback)(response.text, params)

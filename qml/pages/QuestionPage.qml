@@ -289,6 +289,34 @@ Page {
                                 label: qsTr("add a comment")
                                 width: parent.width
                                 padding: Theme.paddingMedium
+                                visible: !app.isLoggedIn
+                            }
+
+                            CommentField {
+                                width: parent.width
+                                visible: app.isLoggedIn
+                                onSubmit: {
+                                    if (text.trim().length < 10){
+                                        return
+                                    }
+
+                                    py.call('app.api.do_comment', [{comment: text.trim(), post_type: 'question', post_id: question.id}], function(rs){
+                                        if (rs && rs.length){
+                                            reset()
+
+                                            var comments = []
+                                            for (var i=0; i<commentsModel.count; i++){
+                                                comments.push(commentsModel.get(i).id)
+                                            }
+
+                                            for (var i=0; i<rs.length; i++){
+                                                if (comments.indexOf(rs[i].id) === -1){
+                                                    commentsModel.append(rs[i])
+                                                }
+                                            }
+                                        }
+                                    })
+                                }
                             }
                         }
                     }
