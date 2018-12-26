@@ -55,6 +55,22 @@ class Api:
             Utils.log(traceback.format_exc())
             self.cache = None
 
+    def delete_comment(self, comment_id):
+        """
+        Delete own comment
+        """
+
+        try:
+            if not comment_id:
+                raise Exception('Invalid parameter')
+
+            delete_comment_url = BASE_URL + 'comment/delete/'
+            response = self.request('POST', delete_comment_url, params={'comment_id': int(comment_id)})
+            return True
+        except Exception as e:
+            Utils.log(traceback.format_exc())
+            Utils.error(e.args[0])
+
     def do_comment(self, data={}):
         """
         Submit comment on question/answer
@@ -93,6 +109,8 @@ class Api:
         output['date'] = data['comment_added_at']
         output['date_ago'] = timeago.format(self._parse_datetime(data['comment_added_at']), datetime.now(TIMEZONE))
         output['content'] = self.convert_content(data['html'])
+        output['is_deletable'] = data['is_deletable']
+        output['is_editable'] = data['is_editable']
 
         return output
 
@@ -508,8 +526,6 @@ class Api:
                 user_node = post_node.find('div', class_='post-update-info-container')
                 if user_node is not None:
                     data['users'] = self.parse_user(user_node)
-                    #user['username'] = params['author']
-                    #user['is_author'] = True
 
             # Parse question's comments
             data['comments'] = []
@@ -703,6 +719,8 @@ class Api:
             comment_id_pattern = re.compile('comment-(\d+)')
             for comment_node in node.find_all('div', class_='comment'):
                 item = {}
+                item['is_deletable'] = False
+                item['is_editable'] = False
                 
                 comment_id_result = comment_id_pattern.match(comment_node.get('id'))
                 if comment_id_result:
@@ -721,7 +739,7 @@ class Api:
                         elif p.name == 'p' or p.name == 'del':
                             item['content'] += self.parse_content(p)
 
-                    data.append(item)
+                data.append(item)
 
         return data
 

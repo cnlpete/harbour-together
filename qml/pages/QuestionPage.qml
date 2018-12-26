@@ -272,6 +272,9 @@ Page {
                                         anchors.left: parent.left
                                         anchors.right: parent.right
                                         anchors.rightMargin: Theme.paddingMedium
+                                        onDeleted: {
+                                            commentsListView.remove(index)
+                                        }
 
                                         Hr {
                                             id: commentsHr
