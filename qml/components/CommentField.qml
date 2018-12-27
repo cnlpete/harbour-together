@@ -6,6 +6,7 @@ Row {
 
     property alias text: commentTextArea.text
     property alias topMargin: commentTextArea.textTopMargin
+    property bool loading: false
 
     signal submit()
 
@@ -22,7 +23,7 @@ Row {
 
     Label {
         id: commentSendBtn
-        text: "\uf1d8"
+        text: loading ? "" : "\uf1d8"
         width: Theme.itemSizeSmall
         height: commentTextArea.height - commentTextArea._labelItem.height - Theme.paddingMedium
         font.pixelSize: Theme.fontSizeMedium
@@ -31,14 +32,24 @@ Row {
         color: commentSendBtnMouse.pressed ? Theme.highlightColor : Theme.primaryColor
         opacity: commentTextArea.text ? 1 : 0.3
 
+        BusyIndicator {
+            id: busyIndicator
+            size: BusyIndicatorSize.ExtraSmall
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+            running: true
+            visible: loading
+        }
+
         MouseArea {
             id: commentSendBtnMouse
             anchors.fill: parent
-            onClicked: root.submit()
+            onClicked: loading ? {} : root.submit()
         }
     }
 
     function reset(){
         commentTextArea.text = ''
+        loading = false
     }
 }

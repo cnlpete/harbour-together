@@ -14,6 +14,7 @@ Page {
     property string tags: ""
     property bool loading: false
     property bool compactView: false
+    property bool hasMore: false
 
     allowedOrientations: Orientation.All
 
@@ -73,6 +74,22 @@ Page {
             }
         }
 
+        PushUpMenu {
+            id: pushUpMenu
+            visible: hasMore && listModel.count
+            busy: loading
+
+            MenuItem {
+                text: qsTr(loading ? 'Loading...' : 'Load more')
+                onClicked: {
+                    if (loading) return
+
+                    p += 1
+                    refresh()
+                }
+            }
+        }
+
         VerticalScrollDecorator {}
     }
 
@@ -106,6 +123,41 @@ Page {
         refresh()
     }
 
+    onStatusChanged: {
+        if (status === PageStatus.Active){
+            var filtersPage = pageStack.pushAttached(Qt.resolvedUrl("FiltersPage.qml"), {scope: scope, order: order, direction: direction, tags: tags, query: query})
+            filtersPage.close.connect(function(){
+                var reload = false
+
+                if (scope !== filtersPage.scope){
+                    scope = filtersPage.scope
+                    reload = true
+                }
+                if (order !== filtersPage.order){
+                    order = filtersPage.order
+                    reload = true
+                }
+                if (direction !== filtersPage.direction){
+                    direction = filtersPage.direction
+                    reload = true
+                }
+                if (tags !== filtersPage.tags){
+                    tags = filtersPage.tags
+                    reload = true
+                }
+                if (query !== filtersPage.query){
+                    query = filtersPage.query
+                    reload = true
+                }
+
+                if (reload){
+                    p = 1
+                    refresh()
+                }
+            })
+        }
+    }
+
     function refresh(){
         if (loading) return
         loading = true
@@ -115,13 +167,26 @@ Page {
         }
 
         py.call('app.api.get_questions', [{scope: scope, sort: order + '-' + direction, tags: tags, query: query, page: p}], function(rs){
+            loading = false
+
+            if (!rs){
+                if (p > 1){
+                    p -= 1
+                }
+                return
+            }
+
             if (rs.questions && rs.questions.length){
                 for (var i=0; i<rs.questions.length; i++){
                     listModel.append(rs.questions[i])
                 }
             }
-            loading = false
-            attachFiltersPage()
+
+            if (rs.page < rs.pages){
+                hasMore = true
+            }else{
+                hasMore = false
+            }
         })
     }
 
@@ -132,38 +197,5 @@ Page {
         .arg(direction)
         .arg(query ? '   \uf002 '+query : '')
         .arg(tags ? '   \uf02b '+tags : '')
-    }
-
-    function attachFiltersPage(){
-        var filtersPage = pageStack.pushAttached(Qt.resolvedUrl("FiltersPage.qml"), {scope: scope, order: order, direction: direction, tags: tags, query: query})
-        filtersPage.close.connect(function(){
-            var reload = false
-
-            if (scope !== filtersPage.scope){
-                scope = filtersPage.scope
-                reload = true
-            }
-            if (order !== filtersPage.order){
-                order = filtersPage.order
-                reload = true
-            }
-            if (direction !== filtersPage.direction){
-                direction = filtersPage.direction
-                reload = true
-            }
-            if (tags !== filtersPage.tags){
-                tags = filtersPage.tags
-                reload = true
-            }
-            if (query !== filtersPage.query){
-                query = filtersPage.query
-                reload = true
-            }
-
-            if (reload){
-                p = 1
-                refresh()
-            }
-        })
     }
 }

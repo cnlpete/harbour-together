@@ -67,7 +67,11 @@ class Api:
 
             delete_comment_url = BASE_URL + 'comment/delete/'
             response = self.request('POST', delete_comment_url, params={'comment_id': int(comment_id)})
-            return True
+            response = response.json()
+            output = []
+            for item in response:
+                output.append(self._convert_comment(item))
+            return output
         except Exception as e:
             Utils.log(traceback.format_exc())
             Utils.error(e.args[0])
@@ -274,6 +278,7 @@ class Api:
         """
 
         self.sessionId = ''
+        self.userId = 0
         
         # Clear WebKit cookies DB
         if os.path.exists(COOKIE_PATH):

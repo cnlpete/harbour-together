@@ -272,9 +272,7 @@ Page {
                                         anchors.left: parent.left
                                         anchors.right: parent.right
                                         anchors.rightMargin: Theme.paddingMedium
-                                        onDeleted: {
-                                            commentsModel.remove(index)
-                                        }
+                                        onDeleted: commentsModel.remove(index)
 
                                         Hr {
                                             id: commentsHr
@@ -289,13 +287,15 @@ Page {
                             }
 
                             CommentButton {
-                                label: qsTr("add a comment")
+                                label: qsTr("login to comment")
                                 width: parent.width
                                 padding: Theme.paddingMedium
                                 visible: !app.isLoggedIn
+                                onClicked: pageStack.push(Qt.resolvedUrl("LoginPage.qml"))
                             }
 
                             CommentField {
+                                id: commentField
                                 width: parent.width
                                 visible: app.isLoggedIn
                                 topMargin: Theme.paddingMedium
@@ -304,9 +304,11 @@ Page {
                                         return
                                     }
 
+                                    commentField.loading = true
+
                                     py.call('app.api.do_comment', [{comment: text.trim(), post_type: 'question', post_id: question.id}], function(rs){
                                         if (rs && rs.length){
-                                            reset()
+                                            commentField.reset()
 
                                             var comments = []
                                             for (var i=0; i<commentsModel.count; i++){
@@ -332,7 +334,7 @@ Page {
                     }
 
                     Label {
-                        text: question ? (question.answer_count + " " + (qsTr("Answers"))) : ""
+                        text: qsTr("%n Answers", "", question.answer_count)
                         color: Theme.primaryColor
                         wrapMode: Text.WordWrap
                         font.pixelSize: Theme.fontSizeMedium
@@ -361,6 +363,12 @@ Page {
                             questionModel: question
                             width: parent.width
                         }
+                    }
+
+                    AnswerButton {
+                        width: parent.width
+                        onClicked: pageStack.push(Qt.resolvedUrl("LoginPage.qml"))
+                        visible: !app.isLoggedIn
                     }
                 }
             }

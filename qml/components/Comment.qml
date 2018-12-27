@@ -6,6 +6,7 @@ Item {
     id: root
 
     property variant dataModel: ({})
+    property bool deleting: false
 
     signal deleted()
 
@@ -15,6 +16,7 @@ Item {
     Column {
         id: col
         width: parent.width
+        spacing: Theme.paddingSmall
 
         Row {
             width: parent.width
@@ -64,7 +66,7 @@ Item {
         Label {
             id: deleteBtn
             visible: dataModel.is_deletable
-            text: qsTr('delete')
+            text: qsTr(deleting ? 'deleting...' : 'delete')
             color: Theme.highlightColor
             font.pixelSize: Theme.fontSizeExtraSmall
             anchors.right: parent.right
@@ -73,8 +75,12 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
+                    if (deleting) return
+
                     remorseItem.execute(root, qsTr('Deleting...'), function(){
+                        deleting = true
                         py.call('app.api.delete_comment', [dataModel.id], function(rs){
+                            deleting = false
                             if (rs){
                                 root.deleted()
                             }

@@ -110,7 +110,6 @@ Item {
                 width: parent.width - leftCol.width - Theme.paddingMedium
 
                 Label {
-                    id: text
                     text: dataModel.content
                     color: Theme.primaryColor
                     linkColor: Theme.highlightColor
@@ -149,6 +148,7 @@ Item {
                     anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
                     anchors.right: parent.right
                     anchors.rightMargin: Theme.paddingMedium
+                    onDeleted: commentsModel.remove(index)
 
                     Hr {
                         id: commentsHr
@@ -157,7 +157,6 @@ Item {
                         anchors.top: parent.bottom
                         anchors.left: parent.left
                         anchors.right: parent.right
-                        visible: index < commentsModel.count - 1
                     }
                 }
             }
@@ -171,12 +170,46 @@ Item {
         }
 
         CommentButton {
-            label: qsTr("no comment")
+            label: qsTr("login to comment")
             anchors.left: parent.left
             anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
             anchors.right: parent.right
             padding: Theme.paddingMedium
-            visible: !commentsModel.count
+            visible: !app.isLoggedIn
+            onClicked: pageStack.push(Qt.resolvedUrl("../pages/LoginPage.qml"))
+        }
+
+        CommentField {
+            id: commentField
+            anchors.left: parent.left
+            anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
+            anchors.right: parent.right
+            visible: app.isLoggedIn
+            topMargin: Theme.paddingMedium
+            onSubmit: {
+                if (text.trim().length < 10){
+                    return
+                }
+
+                commentField.loading = true
+
+                py.call('app.api.do_comment', [{comment: text.trim(), post_type: 'answer', post_id: dataModel.id}], function(rs){
+                    if (rs && rs.length){
+                        commentField.reset()
+
+                        var comments = []
+                        for (var i=0; i<commentsModel.count; i++){
+                            comments.push(commentsModel.get(i).id)
+                        }
+
+                        for (var i=0; i<rs.length; i++){
+                            if (comments.indexOf(rs[i].id) === -1){
+                                commentsModel.append(rs[i])
+                            }
+                        }
+                    }
+                })
+            }
         }
 
         Hr {
