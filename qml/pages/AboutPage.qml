@@ -19,8 +19,16 @@ Page {
                 title: qsTr("About")
             }
 
+            Image {
+                source: "/usr/share/icons/hicolor/128x128/apps/harbour-voyager.png"
+                width: Theme.iconSizeExtraLarge
+                height: width
+                fillMode: Image.Stretch
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
+
             AboutLabel {
-                text: "Together"
+                text: "Voyager"
                 font.pixelSize: Theme.fontSizeLarge
             }
 
@@ -45,6 +53,11 @@ Page {
                 text: "By using this app you automatically agree to Together.Jolla.Com's "+
                       "<a href=\"https://together.jolla.com/jolla/terms_and_conditions/\">Terms of Service</a> and " +
                       "<a href=\"https://jolla.com/privacy-policy/\">Privacy Policy</a>"
+                onLinkActivated: Utils.handleLink(link)
+            }
+
+            AboutLabel {
+                text: "App icon by <a href=\"https://www.iconfinder.com/bendavis\">Creaticca Ltd</a>"
                 onLinkActivated: Utils.handleLink(link)
             }
         }

@@ -39,8 +39,8 @@ from diskcache import Cache
 
 BASE_URL = 'https://together.jolla.com/'
 TIMEZONE = timezone(timedelta(hours=2), 'Europe/Helsinki')
-COOKIE_PATH = '/home/nemo/.local/share/harbour-together/harbour-together/.QtWebKit/cookies.db'
-CACHE_PATH = '/home/nemo/.local/share/harbour-together/harbour-together/cache/'
+COOKIE_PATH = '/home/nemo/.local/share/harbour-voyager/harbour-voyager/.QtWebKit/cookies.db'
+CACHE_PATH = '/home/nemo/.local/share/harbour-voyager/harbour-voyager/cache/'
 
 class Api:
     def __init__(self):

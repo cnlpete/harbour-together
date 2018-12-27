@@ -10,7 +10,7 @@
 #   - translation filenames have to be changed
 
 # The name of your application
-TARGET = harbour-together
+TARGET = harbour-voyager
 
 CONFIG += sailfishapp webkit
 
@@ -24,15 +24,15 @@ write_file($$$$OUT_PWD/version.h, VERSION_H)
 HEADERS += \
     src/settings.h
 
-SOURCES += src/harbour-together.cpp \
+SOURCES += src/harbour-voyager.cpp \
     src/settings.cpp
 
 DISTFILES += qml/*.qml \
-    rpm/harbour-together.spec \
-    rpm/harbour-together.yaml \
-    rpm/harbour-together.changes \
+    rpm/harbour-voyager.spec \
+    rpm/harbour-voyager.yaml \
+    rpm/harbour-voyager.changes \
     translations/*.ts \
-    harbour-together.desktop \
+    harbour-voyager.desktop \
     qml/python/*.py \
     qml/js/*.js \
     qml/fonts/*.ttf \
@@ -49,4 +49,4 @@ SAILFISHAPP_ICONS = 86x86 108x108 128x128
 # planning to localize your app, remember to comment out the
 # following TRANSLATIONS line. And also do not forget to
 # modify the localized app name in the the .desktop file.
-TRANSLATIONS += translations/harbour-together-de.ts
+#TRANSLATIONS += translations/harbour-voyager-de.ts

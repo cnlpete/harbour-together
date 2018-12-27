@@ -81,8 +81,8 @@ CoverBackground {
     }
 
     CoverPlaceholder {
-        icon.source: "/usr/share/icons/hicolor/86x86/apps/harbour-together.png"
-        text: "Together"
+        icon.source: "/usr/share/icons/hicolor/86x86/apps/harbour-voyager.png"
+        text: "Voyager"
         visible: !app.isLoggedIn
     }
 
