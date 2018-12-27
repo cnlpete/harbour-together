@@ -273,7 +273,7 @@ Page {
                                         anchors.right: parent.right
                                         anchors.rightMargin: Theme.paddingMedium
                                         onDeleted: {
-                                            commentsListView.remove(index)
+                                            commentsModel.remove(index)
                                         }
 
                                         Hr {
@@ -298,6 +298,7 @@ Page {
                             CommentField {
                                 width: parent.width
                                 visible: app.isLoggedIn
+                                topMargin: Theme.paddingMedium
                                 onSubmit: {
                                     if (text.trim().length < 10){
                                         return

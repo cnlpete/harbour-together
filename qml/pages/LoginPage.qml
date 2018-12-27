@@ -21,7 +21,7 @@ Page {
                 if (loadRequest.url.toString() === 'https://together.jolla.com/questions/'){
                     webview.experimental.evaluateJavaScript(root.getUserInfoScript, function(rs){
                         if (rs && rs.url.indexOf('/users/') !== -1){
-                            py.call('app.api.set_logged_in_user', [{username: rs.name, profileUrl: rs.url}], function(success){
+                            py.call('app.api.set_logged_in_user', [{username: rs.name, profileUrl: rs.url}, true], function(success){
                                 if (success){
                                     app.isLoggedIn = true
                                     app.username = rs.name

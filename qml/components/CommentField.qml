@@ -5,6 +5,7 @@ Row {
     id: root
 
     property alias text: commentTextArea.text
+    property alias topMargin: commentTextArea.textTopMargin
 
     signal submit()
 

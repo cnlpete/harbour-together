@@ -45,6 +45,7 @@ CACHE_PATH = '/home/nemo/.local/share/harbour-together/harbour-together/cache/'
 class Api:
     def __init__(self):
         self.sessionId = ''
+        self.userId = 0
         
         try:
             if not os.path.exists(CACHE_PATH):
@@ -147,9 +148,12 @@ class Api:
 
         if type(self.cache) is Cache:
             sessionId = self.cache.get('user.sessionId')
-            if sessionId:
+            userId = self.cache.get('user.id')
+            if sessionId and userId:
                 self.sessionId = sessionId
+                self.userId = userId
                 user = {}
+                user['id'] = userId
                 user['username'] = self.cache.get('user.username')
                 user['profileUrl'] = self.cache.get('user.profileUrl')
                 user['avatarUrl'] = self.cache.get('user.avatarUrl')
@@ -195,35 +199,44 @@ class Api:
 
         return data
 
-    def set_logged_in_user(self, user={}):
+    def set_logged_in_user(self, user={}, check_session=False):
         """
         Set logged in user to cache
         """
 
         try:
             if type(self.cache) is Cache:
-                sessionId = self.get_session_id_from_cookie()
-                if sessionId:
-                    self.sessionId = sessionId
-                    self.cache.set('user.sessionId', sessionId)
-                    if 'username' in user:
-                        self.cache.set('user.username', user['username'])
-                    if 'profileUrl' in user:
-                        self.cache.set('user.profileUrl', user['profileUrl'])
-                    if 'avatarUrl' in user:
-                        self.cache.set('user.avatarUrl', user['avatarUrl'])
-                    if 'reputation' in user:
-                        self.cache.set('user.reputation', user['reputation'])
-                    if 'badge1' in user:
-                        self.cache.set('user.badge1', user['badge1'])
-                    if 'badge2' in user:
-                        self.cache.set('user.badge2', user['badge2'])
-                    if 'badge3' in user:
-                        self.cache.set('user.badge3', user['badge3'])
+                if check_session:
+                    sessionId = self.get_session_id_from_cookie()
+                    if sessionId:
+                        self.sessionId = sessionId
+                        self.cache.set('user.sessionId', sessionId)
+                    else:
+                        raise Exception('Could not login. Please try again.')
+
+                if 'id' in user:
+                    self.cache.set('user.id', user['id'])
+                if 'username' in user:
+                    self.cache.set('user.username', user['username'])
+                if 'profileUrl' in user:
+                    self.cache.set('user.profileUrl', user['profileUrl'])
+                    if 'id' not in user:
+                        user_id = self._parse_user_id_from_url(user['profileUrl'])
+                        if user_id:
+                            self.userId = user_id
+                            self.cache.set('user.id', user_id)
+                if 'avatarUrl' in user:
+                    self.cache.set('user.avatarUrl', user['avatarUrl'])
+                if 'reputation' in user:
+                    self.cache.set('user.reputation', user['reputation'])
+                if 'badge1' in user:
+                    self.cache.set('user.badge1', user['badge1'])
+                if 'badge2' in user:
+                    self.cache.set('user.badge2', user['badge2'])
+                if 'badge3' in user:
+                    self.cache.set('user.badge3', user['badge3'])
                     
-                    return True
-                else:
-                    raise Exception('Could not login. Please try again.')
+                return True
             else:
                 raise Exception('Could not save data.')
         except:
@@ -381,7 +394,9 @@ class Api:
         if user_link and link_href.find('/users/') != -1:
             data['profileUrl'] = self.get_link(link_href)
             data['username'] = user_link.get_text()
-            data['id'] = re.compile('\/users\/(\d+)\/').match(link_href).group(1)
+            user_id = self._parse_user_id_from_url(link_href)
+            if user_id:
+                data['id'] = user_id
 
         reputation_node = user_node.select_one('a.reputation')
         if reputation_node:
@@ -556,7 +571,7 @@ class Api:
         if favorite_node is not None:
             favorite_text = favorite_node.get_text().strip()
             favorite_pattern = re.compile('(\d+) follower[s]*')
-            favorite_result = favorite_pattern.match(favorite_text)
+            favorite_result = favorite_pattern.search(favorite_text)
             if favorite_result:
                 data['followers'] = int(favorite_result.group(1))
 
@@ -722,7 +737,7 @@ class Api:
                 item['is_deletable'] = False
                 item['is_editable'] = False
                 
-                comment_id_result = comment_id_pattern.match(comment_node.get('id'))
+                comment_id_result = comment_id_pattern.search(comment_node.get('id'))
                 if comment_id_result:
                     item['id'] = int(comment_id_result.group(1))
                     
@@ -733,6 +748,10 @@ class Api:
                         if 'class' in p.attrs and 'author' in p['class']:
                             item['author'] = p.get_text()
                             item['profile_url'] = self.get_link(p.get('href'))
+                            author_id = self._parse_user_id_from_url(item['profile_url'])
+                            if self.userId == author_id:
+                                item['is_deletable'] = True
+                                item['is_editable'] = True
                         elif 'class' in p.attrs and 'age' in p['class']:
                             item['date'] = p.abbr['title']
                             item['date_ago'] = timeago.format(self._parse_datetime(item['date']), datetime.now(TIMEZONE))
@@ -742,6 +761,15 @@ class Api:
                 data.append(item)
 
         return data
+
+    def _parse_user_id_from_url(self, profile_url):
+        """
+        Parse user id from profile url: https://together.jolla.com/users/12789/lbee => 12789
+        """
+
+        result = re.compile('\/users\/(\d+)').search(profile_url)
+        if result:
+            return result.group(1)
 
     def parse_user(self, node):
         """
