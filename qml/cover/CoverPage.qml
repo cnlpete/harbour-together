@@ -38,6 +38,7 @@ CoverBackground {
             text: app.username
             visible: !!app.username
             font.pixelSize: Theme.fontSizeLarge
+            fontSizeMode: Text.Fit
         }
 
         CoverLabel {
@@ -81,7 +82,7 @@ CoverBackground {
     }
 
     CoverPlaceholder {
-        icon.source: "/usr/share/icons/hicolor/86x86/apps/harbour-voyager.png"
+        icon.source: "/usr/share/icons/hicolor/128x128/apps/harbour-voyager.png"
         text: "Voyager"
         visible: !app.isLoggedIn
     }

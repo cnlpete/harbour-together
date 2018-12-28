@@ -33,8 +33,10 @@ Page {
                 }
             }
 
-            PageHeader {
-                title: question.title
+            QuestionTitle {
+                text: question.title || ''
+                width: parent.width
+                paddingTop: Theme.horizontalPageMargin
             }
 
             SectionHeader {

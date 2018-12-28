@@ -41,24 +41,32 @@ Page {
             }
 
             AboutLabel {
-                text: "Unoffical native Together.Jolla.Com client for Sailfish OS"
+                text: "Unoffical native <a href=\"https://together.jolla.com/\">Together.Jolla.Com</a> client for Sailfish OS"
             }
 
             AboutLabel {
                 text: "This is an open source software which is distributed under the terms of the <a href=\"https://opensource.org/licenses/MIT\">MIT License</a>"
-                onLinkActivated: Utils.handleLink(link)
             }
 
             AboutLabel {
                 text: "By using this app you automatically agree to Together.Jolla.Com's "+
                       "<a href=\"https://together.jolla.com/jolla/terms_and_conditions/\">Terms of Service</a> and " +
                       "<a href=\"https://jolla.com/privacy-policy/\">Privacy Policy</a>"
-                onLinkActivated: Utils.handleLink(link)
             }
 
             AboutLabel {
                 text: "App icon by <a href=\"https://www.iconfinder.com/bendavis\">Creaticca Ltd</a>"
-                onLinkActivated: Utils.handleLink(link)
+            }
+
+            Item {
+                width: parent.width
+                height: Theme.paddingLarge
+            }
+
+            Button {
+                text: 'Donate'
+                onClicked: Utils.handleLink('https://www.paypal.me/nvlong')
+                anchors.horizontalCenter: parent.horizontalCenter
             }
         }
     }

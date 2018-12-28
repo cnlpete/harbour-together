@@ -170,13 +170,20 @@ Item {
         }
 
         CommentButton {
-            label: qsTr("login to comment")
+            label: app.isLoggedIn ? qsTr("add a comment") : qsTr("login to comment")
             anchors.left: parent.left
             anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
             anchors.right: parent.right
             padding: Theme.paddingMedium
-            visible: !app.isLoggedIn
-            onClicked: pageStack.push(Qt.resolvedUrl("../pages/LoginPage.qml"))
+            onClicked: {
+                if (app.isLoggedIn){
+                    visible = false
+                    commentField.visible = true
+                    commentField.focus()
+                }else{
+                    pageStack.push(Qt.resolvedUrl("../pages/LoginPage.qml"))
+                }
+            }
         }
 
         CommentField {
@@ -184,8 +191,8 @@ Item {
             anchors.left: parent.left
             anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
             anchors.right: parent.right
-            visible: app.isLoggedIn
             topMargin: Theme.paddingMedium
+            visible: false
             onSubmit: {
                 if (text.trim().length < 10){
                     return

@@ -35,9 +35,13 @@ ApplicationWindow {
     Notification {
         id: notification
 
-        function error(msg){
+        function error(msg, timeout){
             previewSummary = qsTr("Error")
             previewBody = qsTr(msg)
+            if (typeof timeout !== 'undefined'){
+                expireTimeout = timeout
+            }
+
             publish()
         }
     }

@@ -5,6 +5,7 @@ BackgroundItem {
     id: root
 
     property int padding: Theme.paddingLarge
+    property alias text: label.text
 
     height: content.height + (2 * padding)
 
@@ -20,7 +21,7 @@ BackgroundItem {
         }
 
         Label {
-            text: qsTr("Login/Signup to answer")
+            id: label
             color: Theme.secondaryColor
             font.pixelSize: Theme.fontSizeSmall
             width: parent.width

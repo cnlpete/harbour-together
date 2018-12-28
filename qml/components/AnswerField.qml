@@ -13,13 +13,13 @@ Row {
 
     TextArea {
         id: commentTextArea
-        placeholderText: qsTr('add a comment')
+        placeholderText: qsTr('Add answer')
         label: text.trim().length < minLength ? qsTr('Enter at least %n more characters', '', minLength - text.trim().length) : ''
         _labelItem.font.pixelSize: Theme.fontSizeExtraSmall
         width: parent.width - commentSendBtn.width
         textWidth: width
         textMargin: 0
-        font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeExtraSmall : Theme.fontSizeSmall
+        font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeSmall : Theme.fontSizeMedium
     }
 
     Label {

@@ -35,8 +35,14 @@ Page {
                 }
             }
 
-            PageHeader {
-                title: question.title || ""
+            QuestionTitle {
+                text: question.title || ''
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.leftMargin: Theme.horizontalPageMargin
+                anchors.rightMargin: Theme.horizontalPageMargin
+                paddingTop: Theme.horizontalPageMargin
+                paddingBottom: Theme.paddingMedium
             }
 
             Column {
@@ -57,29 +63,8 @@ Page {
                             id: tagsModel
                         }
 
-                        Rectangle {
-                            height: tagLbl.height + Theme.paddingSmall
-                            width: tagLbl.width + 2 * Theme.paddingMedium
-                            color: tagMouse.pressed ? Theme.highlightBackgroundColor : "transparent"
-                            border.width: 1
-                            border.color: Theme.secondaryColor
-
-                            Label {
-                                id: tagLbl
-                                text: model.name
-                                font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeSmall : Theme.fontSizeMedium
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.verticalCenter: parent.verticalCenter
-                                color: tagMouse.pressed ? Theme.primaryColor : Theme.highlightColor
-
-                                MouseArea {
-                                    id: tagMouse
-                                    anchors.fill: parent
-                                    onClicked: {
-                                        pageStack.push(Qt.resolvedUrl("QuestionsPage.qml"), {tags: model.name, compactView: true})
-                                    }
-                                }
-                            }
+                        QuestionTag {
+                            text: model.name
                         }
                     }
                 }
@@ -287,29 +272,36 @@ Page {
                             }
 
                             CommentButton {
-                                label: qsTr("login to comment")
+                                label: app.isLoggedIn ? qsTr("add a comment") : qsTr("login to comment")
                                 width: parent.width
                                 padding: Theme.paddingMedium
-                                visible: !app.isLoggedIn
-                                onClicked: pageStack.push(Qt.resolvedUrl("LoginPage.qml"))
+                                onClicked: {
+                                    if (app.isLoggedIn){
+                                        visible = false
+                                        commentField.visible = true
+                                        commentField.focus()
+                                    }else{
+                                        pageStack.push(Qt.resolvedUrl("LoginPage.qml"))
+                                    }
+                                }
                             }
 
                             CommentField {
                                 id: commentField
+                                visible: false
                                 width: parent.width
-                                visible: app.isLoggedIn
                                 topMargin: Theme.paddingMedium
                                 onSubmit: {
-                                    if (text.trim().length < 10){
+                                    if (text.trim().length < minLength){
                                         return
                                     }
 
                                     commentField.loading = true
 
                                     py.call('app.api.do_comment', [{comment: text.trim(), post_type: 'question', post_id: question.id}], function(rs){
-                                        if (rs && rs.length){
-                                            commentField.reset()
+                                        commentField.reset()
 
+                                        if (rs && rs.length){
                                             var comments = []
                                             for (var i=0; i<commentsModel.count; i++){
                                                 comments.push(commentsModel.get(i).id)
@@ -334,7 +326,7 @@ Page {
                     }
 
                     Label {
-                        text: qsTr("%n Answers", "", question.answer_count)
+                        text: qsTr("%n Answers", "", question.answer_count || 0)
                         color: Theme.primaryColor
                         wrapMode: Text.WordWrap
                         font.pixelSize: Theme.fontSizeMedium
@@ -367,8 +359,55 @@ Page {
 
                     AnswerButton {
                         width: parent.width
-                        onClicked: pageStack.push(Qt.resolvedUrl("LoginPage.qml"))
-                        visible: !app.isLoggedIn
+                        text: app.isLoggedIn ? qsTr("Add answer") : qsTr("Login/Signup to answer")
+                        onClicked: {
+                            if (app.isLoggedIn){
+                                visible = false
+                                answerField.visible = true
+                                answerField.focus()
+                            }else{
+                                pageStack.push(Qt.resolvedUrl("LoginPage.qml"))
+                            }
+                        }
+                    }
+
+                    AnswerField {
+                        id: answerField
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.leftMargin: Theme.horizontalPageMargin
+                        visible: false
+                        topMargin: Theme.paddingMedium
+                        onSubmit: {
+                            if (text.trim().length < minLength){
+                                return
+                            }
+
+                            answerField.loading = true
+
+                            py.call('app.api.do_answer', [question.id, text.trim()], function(rs){
+                                answerField.reset()
+
+                                if (rs && rs.messages.length){
+                                    for (var i=0; i<rs.messages.length; i++){
+                                        notification.error(rs.messages[i], 0)
+                                    }
+                                }
+
+                                if (rs && rs.answers.length){
+                                    var answers = []
+                                    for (var i=0; i<answerModel.count; i++){
+                                        answers.push(answerModel.get(i).id)
+                                    }
+
+                                    for (var i=0; i<rs.answers.length; i++){
+                                        if (answers.indexOf(rs.answers[i].id) === -1){
+                                            answerModel.append(rs.answers[i])
+                                        }
+                                    }
+                                }
+                            })
+                        }
                     }
                 }
             }

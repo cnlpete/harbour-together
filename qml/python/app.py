@@ -56,6 +56,43 @@ class Api:
             Utils.log(traceback.format_exc())
             self.cache = None
 
+    def do_answer(self, question_id, text):
+        """
+        Submit an answer
+        """
+
+        try:
+            if not question_id or not text:
+                raise Exception('Invalid parameter')
+
+            url = BASE_URL + 'questions/' + str(int(question_id)) + '/answer/'
+            response = self.request('POST', url, params={'csrfmiddlewaretoken': self.csrfToken, 'text': text})
+            if response.status_code == 200:
+                dom = BeautifulSoup(response.text, 'html.parser')
+                return {
+                    'messages': self._parse_notification(dom),
+                    'answers': self.parse_answer(dom)
+                }
+        except Exception as e:
+            Utils.log(traceback.format_exc())
+            Utils.error(e.args[0])
+
+    def _parse_notification(self, node):
+        """
+        Parse notification from page
+        """
+
+        if not node:
+            return []
+
+        messages = []
+        notify_node = node.find('div', class_='notify')
+        if notify_node:
+            for p in notify_node.select('p.notification'):
+                messages.append(p.get_text())
+
+        return messages
+
     def delete_comment(self, comment_id):
         """
         Delete own comment
@@ -553,6 +590,12 @@ class Api:
             if comments_node is not None:
                 data['comments'] = self.parse_comment(comments_node)
 
+            # Parse CSRF token
+            csrf_node = dom.find('input', attrs={'name': 'csrfmiddlewaretoken'})
+            if csrf_node:
+                Utils.log('CSRF: ' + csrf_node.get('value'))
+                self.csrfToken = csrf_node.get('value')
+
         # Parse question paging
         data['has_pages'] = 0
         paging_node = dom.find('div', class_='paginator')
@@ -667,10 +710,6 @@ class Api:
                             style += 'white-space:normal;'
                         p['style'] = style
                         item['content'] += self.parse_content(p)
-
-                    answer_avatar_node = answer_info_node.find('img', class_='gravatar')
-                    if answer_avatar_node is not None:
-                        item['avatar_url'] = 'https:' + self.get_gravatar(answer_avatar_node.get('src'), 100)
 
                 # Parse answer's comments
                 answer_comments_node = answer_node.find('div', class_='comments')
@@ -898,8 +937,6 @@ class Api:
                 response = requests.post(url, data=params, cookies=cookies, timeout=5, headers=headers)
             
             Utils.log('Response code: ' + str(response.status_code))
-            if response.status_code != 200:
-                raise Exception(str(response.status_code))
 
             if callback:
                 return getattr(self, callback)(response.text, params)
