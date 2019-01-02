@@ -11,6 +11,8 @@ Page {
     property string sort: "votes"
     property bool loading: false
     property var votes: ({})
+    property bool hasMoreComments: false
+    property bool hasMoreAnswers: false
 
     allowedOrientations: Orientation.All
 
@@ -280,19 +282,24 @@ Page {
                     }
 
                     CommentButton {
-                        text: question.has_more_comments === true ? qsTr('see more comments') : (app.isLoggedIn ? qsTr("add a comment") : qsTr("login to comment"))
+                        text: {
+                            if (hasMoreComments) return qsTr('see more comments')
+                            else if (app.isLoggedIn) return qsTr("add a comment")
+                            else return qsTr("login to comment")
+                        }
                         anchors.left: parent.left
                         anchors.right: parent.right
                         anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
                         anchors.rightMargin: Theme.paddingMedium
                         padding: Theme.paddingMedium
                         onClicked: {
-                            if (question.has_more_comments){
+                            if (hasMoreComments){
                                 loading = true
                                 py.call('app.api.get_comments', [question.id, 'question'], function(rs){
                                     loading = false
                                     if (rs && rs.length){
                                         question.has_more_comments = false
+                                        hasMoreComments = false
 
                                         var comments = []
                                         for (var i=0; i<commentsModel.count; i++){
@@ -503,6 +510,7 @@ Page {
                 }
                 if (typeof rs.has_more_comments !== 'undefined'){
                     question.has_more_comments = rs.has_more_comments
+                    hasMoreComments = rs.has_more_comments
                 }
                 if (rs.answers){
                     for (var i=0; i<rs.answers.length; i++){
@@ -511,6 +519,7 @@ Page {
                 }
                 if (typeof rs.has_more_answers !== 'undefined'){
                     question.has_more_answers = rs.has_more_answers
+                    hasMoreAnswers = rs.has_more_answers
                 }
                 if (rs.users){
                     for (var i=0; i<rs.users.length; i++){

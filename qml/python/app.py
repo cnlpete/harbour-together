@@ -481,10 +481,10 @@ class Api:
 
         dom = BeautifulSoup(html, 'html.parser')
 
+        data = {}
+
         # Parse logged in user from page header
-        data = self._parse_logged_in_user(dom)
-        if not data:
-            data = {}
+        data['current_user'] = self._parse_logged_in_user(dom)
 
         # Avatar
         avatar_node = dom.find('img', class_='gravatar')
@@ -542,7 +542,11 @@ class Api:
             return None
 
         data = {}
+
+        data['has_more_comments'] = False
+        data['has_more_answers'] = False
         data['id'] = int(node.get('id').replace('question-', ''))
+
         h2_node = node.find('h2')
         if h2_node is not None:
             a_node = h2_node.find('a')
@@ -582,7 +586,7 @@ class Api:
         try:
             data = json.loads(text)
         except ValueError as e:
-            self.log(traceback.format_exc())
+            Utils.log(traceback.format_exc())
             raise Exception('Could not get content')
 
         output = self.convert_question(data)
@@ -984,16 +988,22 @@ class Api:
             elif method == 'POST':
                 headers['x-requested-with'] = 'XMLHttpRequest'
                 response = requests.post(url, data=params, cookies=cookies, timeout=10, headers=headers)
-            
-            Utils.log('Response code: ' + str(response.status_code))
+        except:
+            Utils.log(traceback.format_exc())
+            raise Exception('Network request failed')
 
+        Utils.log('Response code: ' + str(response.status_code))
+        if response.status_code >= 400:
+            raise Exception('Code ' + str(response.status_code))
+
+        try:
             if callback:
                 return getattr(self, callback)(response.text, params)
             else:
                 return response
-        except:
+        except Exception as e:
             Utils.log(traceback.format_exc())
-            raise Exception('Network request failed')
+            raise Exception(e.args[0])
 
     def _parse_questions(self, text, params):
         """

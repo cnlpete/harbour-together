@@ -128,7 +128,7 @@ Page {
         id: busy
         loading: root.loading
         hasError: root.hasError
-        text: qsTr("\uf007 %1").arg(user.username || qsTr('Loading user...'))
+        text: qsTr("\uf007 %1").arg(user.username || qsTr('Loading...'))
         anchors.fill: parent
     }
 
@@ -142,13 +142,12 @@ Page {
         py.call('app.api.get_user', [user], function(rs){
             loading = false
 
-            if (app.isLoggedIn && app.username === user.username){
-                app.avatarUrl = rs.avatarUrl
-                if (rs.reputation) app.reputation = rs.reputation
-                if (rs.badge1) app.badge1 = rs.badge1
-                if (rs.badge2) app.badge2 = rs.badge2
-                if (rs.badge3) app.badge3 = rs.badge3
-                py.call('app.api.set_logged_in_user', [rs])
+            if (app.isLoggedIn && rs.current_user){
+                if (rs.current_user.reputation) app.reputation = rs.current_user.reputation
+                if (rs.current_user.badge1) app.badge1 = rs.current_user.badge1
+                if (rs.current_user.badge2) app.badge2 = rs.current_user.badge2
+                if (rs.current_user.badge3) app.badge3 = rs.current_user.badge3
+                py.call('app.api.set_logged_in_user', [rs.current_user])
             }
 
             if (rs.username){

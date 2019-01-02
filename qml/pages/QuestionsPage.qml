@@ -65,6 +65,15 @@ Page {
             description: getFiltersDisplay()
         }
 
+        section {
+            property: 'section'
+
+            delegate: SectionHeader {
+                text: section
+                height: Theme.itemSizeExtraSmall
+            }
+        }
+
         delegate: QuestionDelegate {
             onClicked: {
                 py.call('app.api.markdown', [model.body], function(html){
@@ -178,7 +187,9 @@ Page {
 
             if (rs.questions && rs.questions.length){
                 for (var i=0; i<rs.questions.length; i++){
-                    listModel.append(rs.questions[i])
+                    var item = rs.questions[i]
+                    item.section = Format.formatDate(new Date(item.last_activity * 1000), Formatter.TimepointSectionRelative)
+                    listModel.append(item)
                 }
             }
 
