@@ -21,37 +21,45 @@
  * THE SOFTWARE.
  */
 
-.pragma library
+//.pragma library
 
 var BASE_URL = 'https://together.jolla.com'
 
 function handleLink(link, forceExternal) {
     if (!link){
-        console.log('Link is empty');
-        return;
+        console.log('Link is empty')
+        return
     }
 
     link = processLink(link)
 
-    if (!forceExternal && link.indexOf("together.jolla.com/question/") > -1){
-        console.log("Internal link: " + link);
-        var id = parseQuestionId(link);
-        if (id){
-            pageStack.push(Qt.resolvedUrl("../pages/QuestionPage.qml"), {question: {id: id}});
+    if (!forceExternal){
+        if (link.indexOf("together.jolla.com/question/") > -1){
+            console.log("Internal link: " + link)
+            var questionId = parseQuestionId(link)
+            if (questionId){
+                pageStack.push(Qt.resolvedUrl("../pages/QuestionPage.qml"), {question: {id: questionId}})
+            }else{
+                console.log("Could not found question ID")
+            }
+        }else if (link.indexOf("together.jolla.com/users/") > -1){
+            console.log("Internal link: " + link)
+            pageStack.push(Qt.resolvedUrl("../pages/UserPage.qml"), {user: {profile_url: link}})
         }else{
-            console.log("Could not found question ID");
+            console.log("External link: " + link)
+            Qt.openUrlExternally(link)
         }
     }else{
-        console.log("External link: " + link);
-        Qt.openUrlExternally(link);
+        console.log("External link: " + link)
+        Qt.openUrlExternally(link)
     }
 }
 
 function parseQuestionId(url){
-    var regex = /together.jolla.com\/question\/(\d+)\//;
-    var matches = regex.exec(url);
+    var regex = /together.jolla.com\/question\/(\d+)\//
+    var matches = regex.exec(url)
     if (matches[1]){
-        return matches[1];
+        return matches[1]
     }
 }
 

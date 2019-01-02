@@ -61,7 +61,7 @@ Item {
                     id: voteUpBtn
                     width: Theme.iconSizeMedium
                     anchors.horizontalCenter: parent.horizontalCenter
-                    vote: votes[dataModel.id] === 1
+                    voted: votes[dataModel.id] === 1
                     onClicked: {
                         if (loading) return
                         loading = true
@@ -71,7 +71,7 @@ Item {
 
                             if (rs && rs.success === 1){
                                 voteLabel.text = rs.count
-                                vote = !rs.status
+                                voted = !rs.status
                             }
                         })
                     }
@@ -88,7 +88,7 @@ Item {
                     id: voteDownBtn
                     width: Theme.iconSizeMedium
                     anchors.horizontalCenter: parent.horizontalCenter
-                    vote: votes[dataModel.id] === -1
+                    voted: votes[dataModel.id] === -1
                     onClicked: {
                         if (loading) return
                         loading = true
@@ -98,7 +98,7 @@ Item {
 
                             if (rs && rs.success === 1){
                                 voteLabel.text = rs.count
-                                vote = !rs.status
+                                voted = !rs.status
                             }
                         })
                     }
@@ -107,7 +107,7 @@ Item {
 
             Column {
                 id: rightCol
-                width: parent.width - leftCol.width - Theme.paddingMedium
+                width: parent.width - leftCol.width - (2 * Theme.paddingMedium)
 
                 Label {
                     text: dataModel.content
@@ -162,21 +162,33 @@ Item {
             }
         }
 
-        CommentMoreButton {
-            visible: false
-            anchors.left: parent.left
-            anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
-            anchors.right: parent.right
-        }
-
         CommentButton {
-            label: app.isLoggedIn ? qsTr("add a comment") : qsTr("login to comment")
+            text: dataModel.has_more_comments === true ? qsTr('see more comments') : (app.isLoggedIn ? qsTr("add a comment") : qsTr("login to comment"))
             anchors.left: parent.left
             anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
             anchors.right: parent.right
             padding: Theme.paddingMedium
             onClicked: {
-                if (app.isLoggedIn){
+                if (dataModel.has_more_comments){
+                    loading = true
+                    py.call('app.api.get_comments', [dataModel.id, 'answer'], function(rs){
+                        loading = false
+                        if (rs && rs.length){
+                            dataModel.has_more_comments = false
+
+                            var comments = []
+                            for (var i=0; i<commentsModel.count; i++){
+                                comments.push(commentsModel.get(i).id)
+                            }
+
+                            for (var i=0; i<rs.length; i++){
+                                if (comments.indexOf(rs[i].id) === -1){
+                                    commentsModel.append(rs[i])
+                                }
+                            }
+                        }
+                    })
+                }else if (app.isLoggedIn){
                     visible = false
                     commentField.visible = true
                     commentField.focus()

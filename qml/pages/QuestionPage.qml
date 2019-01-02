@@ -6,7 +6,7 @@ import "../js/utils.js" as Utils
 Page {
     id: root
 
-    property variant question: ({})
+    property var question: ({})
     property int p: 1
     property string sort: "votes"
     property bool loading: false
@@ -52,6 +52,7 @@ Page {
                 }
 
                 Flow {
+                    layoutDirection: Qt.RightToLeft
                     spacing: Theme.paddingMedium
                     anchors.left: parent.left
                     anchors.leftMargin: Theme.horizontalPageMargin
@@ -69,9 +70,76 @@ Page {
                     }
                 }
 
-                Rectangle {
+                Item {
                     // separator
-                    color: "transparent"
+                    width: parent.width
+                    height: Theme.paddingMedium
+                }
+
+                Row {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: !!question.body
+
+                    VoteUpButton {
+                        id: voteUpBtn
+                        width: Theme.iconSizeMedium
+                        voted: votes[question.id] === 1
+                        onClicked: {
+                            if (loading) return
+                            loading = true
+
+                            py.call('app.api.do_vote', [question.id, 1], function(rs){
+                                loading = false
+
+                                if (rs && rs.success === 1){
+                                    voteLabel.text = rs.count
+                                    question.score = rs.count
+                                    voted = !rs.status
+                                }
+                            })
+                        }
+                    }
+
+                    Label {
+                        id: voteLabel
+                        text: loading ? '' : (question.score || '0')
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        width: (loading ? voteBusy.width : implicitWidth) + 2 * Theme.paddingMedium
+                        height: parent.height
+
+                        BusyIndicator {
+                            id: voteBusy
+                            size: BusyIndicatorSize.Small
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            running: loading
+                        }
+                    }
+
+                    VoteDownButton {
+                        id: voteDownBtn
+                        width: Theme.iconSizeMedium
+                        voted: votes[question.id] === -1
+                        onClicked: {
+                            if (loading) return
+                            loading = true
+
+                            py.call('app.api.do_vote', [question.id, 2], function(rs){
+                                loading = false
+
+                                if (rs && rs.success === 1){
+                                    voteLabel.text = rs.count
+                                    question.score = rs.count
+                                    voted = !rs.status
+                                }
+                            })
+                        }
+                    }
+                }
+
+                Item {
+                    // separator
                     width: parent.width
                     height: Theme.paddingMedium
                 }
@@ -174,148 +242,111 @@ Page {
                         paddingBottom: Theme.paddingMedium
                     }
 
-                    Row {
+                    ListView {
+                        id: commentsListView
+                        interactive: false
+                        height: contentHeight
                         anchors.left: parent.left
-                        anchors.leftMargin: Theme.horizontalPageMargin
                         anchors.right: parent.right
-                        spacing: Theme.paddingMedium
+                        anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
+                        anchors.rightMargin: Theme.paddingMedium
 
-                        Column {
-                            id: voteCol
-                            width: Theme.itemSizeSmall
+                        model: ListModel {
+                            id: commentsModel
+                        }
 
-                            VoteUpButton {
-                                id: voteUpBtn
-                                width: Theme.iconSizeMedium
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                vote: votes[question.id] === 1
-                                onClicked: {
-                                    if (loading) return
-                                    loading = true
+                        delegate: Item {
+                            width: parent.width
+                            height: comments.height + (commentsHr.visible ? commentsHr.height : 0)
 
-                                    py.call('app.api.do_vote', [question.id, 1], function(rs){
-                                        loading = false
+                            Comment {
+                                id: comments
+                                dataModel: model
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.rightMargin: Theme.paddingMedium
+                                onDeleted: commentsModel.remove(index)
 
-                                        if (rs && rs.success === 1){
-                                            voteLabel.text = rs.count
-                                            question.score = rs.count
-                                            vote = !rs.status
-                                        }
-                                    })
-                                }
-                            }
-
-                            Label {
-                                id: voteLabel
-                                text: question.score || '0'
-                                horizontalAlignment: Text.AlignHCenter
-                                width: parent.width
-                            }
-
-                            VoteDownButton {
-                                id: voteDownBtn
-                                width: Theme.iconSizeMedium
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                vote: votes[question.id] === -1
-                                onClicked: {
-                                    if (loading) return
-                                    loading = true
-
-                                    py.call('app.api.do_vote', [question.id, 2], function(rs){
-                                        loading = false
-
-                                        if (rs && rs.success === 1){
-                                            voteLabel.text = rs.count
-                                            question.score = rs.count
-                                            vote = !rs.status
-                                        }
-                                    })
+                                Hr {
+                                    id: commentsHr
+                                    paddingTop: Theme.paddingMedium
+                                    paddingBottom: Theme.paddingMedium
+                                    anchors.top: parent.bottom
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
                                 }
                             }
                         }
+                    }
 
-                        Column {
-                            width: parent.width - voteCol.width - Theme.paddingMedium
+                    CommentButton {
+                        text: question.has_more_comments === true ? qsTr('see more comments') : (app.isLoggedIn ? qsTr("add a comment") : qsTr("login to comment"))
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
+                        anchors.rightMargin: Theme.paddingMedium
+                        padding: Theme.paddingMedium
+                        onClicked: {
+                            if (question.has_more_comments){
+                                loading = true
+                                py.call('app.api.get_comments', [question.id, 'question'], function(rs){
+                                    loading = false
+                                    if (rs && rs.length){
+                                        question.has_more_comments = false
 
-                            ListView {
-                                id: commentsListView
-                                interactive: false
-                                height: contentHeight
-                                width: parent.width
+                                        var comments = []
+                                        for (var i=0; i<commentsModel.count; i++){
+                                            comments.push(commentsModel.get(i).id)
+                                        }
 
-                                model: ListModel {
-                                    id: commentsModel
-                                }
+                                        for (var i=0; i<rs.length; i++){
+                                            if (comments.indexOf(rs[i].id) === -1){
+                                                commentsModel.append(rs[i])
+                                            }
+                                        }
+                                    }
+                                })
+                            }else if (app.isLoggedIn){
+                                visible = false
+                                commentField.visible = true
+                                commentField.focus()
+                            }else{
+                                pageStack.push(Qt.resolvedUrl("LoginPage.qml"))
+                            }
+                        }
+                    }
 
-                                delegate: Item {
-                                    width: parent.width
-                                    height: comments.height + (commentsHr.visible ? commentsHr.height : 0)
+                    CommentField {
+                        id: commentField
+                        visible: false
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.leftMargin: Theme.horizontalPageMargin + Theme.itemSizeSmall + Theme.paddingMedium
+                        anchors.rightMargin: Theme.paddingMedium
+                        topMargin: Theme.paddingMedium
+                        onSubmit: {
+                            if (text.trim().length < minLength){
+                                return
+                            }
 
-                                    Comment {
-                                        id: comments
-                                        dataModel: model
-                                        anchors.left: parent.left
-                                        anchors.right: parent.right
-                                        anchors.rightMargin: Theme.paddingMedium
-                                        onDeleted: commentsModel.remove(index)
+                            commentField.loading = true
 
-                                        Hr {
-                                            id: commentsHr
-                                            paddingTop: Theme.paddingMedium
-                                            paddingBottom: Theme.paddingMedium
-                                            anchors.top: parent.bottom
-                                            anchors.left: parent.left
-                                            anchors.right: parent.right
+                            py.call('app.api.do_comment', [{comment: text.trim(), post_type: 'question', post_id: question.id}], function(rs){
+                                commentField.reset()
+
+                                if (rs && rs.length){
+                                    var comments = []
+                                    for (var i=0; i<commentsModel.count; i++){
+                                        comments.push(commentsModel.get(i).id)
+                                    }
+
+                                    for (var i=0; i<rs.length; i++){
+                                        if (comments.indexOf(rs[i].id) === -1){
+                                            commentsModel.append(rs[i])
                                         }
                                     }
                                 }
-                            }
-
-                            CommentButton {
-                                label: app.isLoggedIn ? qsTr("add a comment") : qsTr("login to comment")
-                                width: parent.width
-                                padding: Theme.paddingMedium
-                                onClicked: {
-                                    if (app.isLoggedIn){
-                                        visible = false
-                                        commentField.visible = true
-                                        commentField.focus()
-                                    }else{
-                                        pageStack.push(Qt.resolvedUrl("LoginPage.qml"))
-                                    }
-                                }
-                            }
-
-                            CommentField {
-                                id: commentField
-                                visible: false
-                                width: parent.width
-                                topMargin: Theme.paddingMedium
-                                onSubmit: {
-                                    if (text.trim().length < minLength){
-                                        return
-                                    }
-
-                                    commentField.loading = true
-
-                                    py.call('app.api.do_comment', [{comment: text.trim(), post_type: 'question', post_id: question.id}], function(rs){
-                                        commentField.reset()
-
-                                        if (rs && rs.length){
-                                            var comments = []
-                                            for (var i=0; i<commentsModel.count; i++){
-                                                comments.push(commentsModel.get(i).id)
-                                            }
-
-                                            for (var i=0; i<rs.length; i++){
-                                                if (comments.indexOf(rs[i].id) === -1){
-                                                    commentsModel.append(rs[i])
-                                                }
-                                            }
-                                        }
-                                    })
-                                }
-                            }
+                            })
                         }
                     }
 
@@ -359,6 +390,7 @@ Page {
 
                     AnswerButton {
                         width: parent.width
+                        padding: Theme.horizontalPageMargin
                         text: app.isLoggedIn ? qsTr("Add answer") : qsTr("Login/Signup to answer")
                         onClicked: {
                             if (app.isLoggedIn){
@@ -377,7 +409,7 @@ Page {
                         anchors.right: parent.right
                         anchors.leftMargin: Theme.horizontalPageMargin
                         visible: false
-                        topMargin: Theme.paddingMedium
+                        topMargin: Theme.horizontalPageMargin
                         onSubmit: {
                             if (text.trim().length < minLength){
                                 return
@@ -417,7 +449,7 @@ Page {
 
         PushUpMenu {
             id: pushUpMenu
-            visible: false
+            visible: !!question.has_more_answers
 
             MenuItem {
                 text: loading ? qsTr("Loading...") : qsTr("Load more")
@@ -469,20 +501,21 @@ Page {
                         commentsModel.append(rs.comments[i])
                     }
                 }
+                if (typeof rs.has_more_comments !== 'undefined'){
+                    question.has_more_comments = rs.has_more_comments
+                }
                 if (rs.answers){
                     for (var i=0; i<rs.answers.length; i++){
                         answerModel.append(rs.answers[i])
                     }
                 }
+                if (typeof rs.has_more_answers !== 'undefined'){
+                    question.has_more_answers = rs.has_more_answers
+                }
                 if (rs.users){
                     for (var i=0; i<rs.users.length; i++){
                         usersModel.append(rs.users[i])
                     }
-                }
-                if (rs.has_pages){
-                    pushUpMenu.visible = true
-                }else{
-                    pushUpMenu.visible = false
                 }
                 if (rs.votes){
                     votes = rs.votes
@@ -491,7 +524,9 @@ Page {
                 pageStack.pushAttached(Qt.resolvedUrl("QuestionExtrasPage.qml"), {question: question})
             })
         }else if (question.id){
+            loading = true
             py.call("app.api.get_question_by_id", [question.id], function(rs){
+                loading = false
                 if (rs){
                     question = rs
 

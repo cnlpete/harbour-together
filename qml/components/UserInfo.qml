@@ -24,7 +24,13 @@ Rectangle {
 
             Image {
                 id: avatarImg
-                source: dataModel && dataModel.avatar_url ? dataModel.avatar_url : ""
+                source: {
+                    if (!dataModel) return ""
+                    else if (dataModel.is_wiki) return "../images/wiki.png"
+                    else if (dataModel.is_anonymous) return "../images/anon.png"
+                    else if (dataModel.avatar_url) return dataModel.avatar_url
+                    else return ""
+                }
                 anchors.fill: parent
             }
 
@@ -57,12 +63,21 @@ Rectangle {
                     id: authorLbl
                     text: {
                         if (!dataModel) return ""
-                        if (dataModel.is_wiki) return qsTr("This post is a wiki")
+                        else if (dataModel.is_wiki) return qsTr("This post is a wiki")
+                        else if (dataModel.is_anonymous) return qsTr("Anonymous")
                         else if (dataModel.username) return dataModel.username
                         else return ""
                     }
-                    color: Theme.primaryColor
+                    color: dataModel.username ? Theme.highlightColor : Theme.primaryColor
                     font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeSmall : Theme.fontSizeMedium
+
+                    MouseArea {
+                        visible: !!dataModel.username
+                        anchors.fill: parent
+                        onClicked: {
+                            pageStack.push(Qt.resolvedUrl("../pages/UserPage.qml"), {user: {username: dataModel.username, profile_url: dataModel.profile_url}})
+                        }
+                    }
                 }
 
                 Label{

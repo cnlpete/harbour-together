@@ -5,10 +5,10 @@ Button {
     id: root
 
     property bool loading: false
-    property bool vote: false
+    property bool voted: false
 
     Image {
-        source: "image://theme/icon-s-like?" + (vote ? Theme.highlightColor : Theme.primaryColor)
+        source: "image://theme/icon-s-like?" + (voted ? Theme.highlightColor : Theme.primaryColor)
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter
         visible: !loading

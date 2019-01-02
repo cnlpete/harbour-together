@@ -56,6 +56,29 @@ class Api:
             Utils.log(traceback.format_exc())
             self.cache = None
 
+    def get_comments(self, post_id, post_type):
+        """
+        Get all comments for question/answer
+        """
+
+        try:
+            if not post_id or not post_type:
+                raise Exception('Invalid parameter')
+            if post_type != 'question' and post_type != 'answer':
+                raise Exception('Invalid parameter')
+
+            url = BASE_URL + 'post_comments/'
+            url += '?' + urllib.parse.urlencode({'post_id': int(post_id), 'post_type': post_type})
+            response = self.request('GET', url, is_ajax=True)
+            response = response.json()
+            output = []
+            for item in response:
+                output.append(self._convert_comment(item))
+            return output
+        except Exception as e:
+            Utils.log(traceback.format_exc())
+            Utils.error(e.args[0])
+
     def do_answer(self, question_id, text):
         """
         Submit an answer
@@ -127,12 +150,12 @@ class Api:
                 raise Exception('Invalid parameter')
 
             submit_comment_url = BASE_URL + 'post_comments/'
-            reponse = self.request('POST', submit_comment_url, params={
+            response = self.request('POST', submit_comment_url, params={
                 'comment': comment, 'post_type': post_type, 'post_id': post_id
             })
-            reponse = reponse.json()
+            response = response.json()
             output = []
-            for item in reponse:
+            for item in response:
                 output.append(self._convert_comment(item))
             return output
         except Exception as e:
@@ -150,7 +173,7 @@ class Api:
         output['profile_url'] = data['user_url']
         output['date'] = data['comment_added_at']
         output['date_ago'] = timeago.format(self._parse_datetime(data['comment_added_at']), datetime.now(TIMEZONE))
-        output['content'] = self.convert_content(data['html'])
+        output['content'] = self.convert_content(data['html'].replace('\n', ''))
         output['is_deletable'] = data['is_deletable']
         output['is_editable'] = data['is_editable']
 
@@ -464,9 +487,11 @@ class Api:
             data = {}
 
         # Avatar
-        avartar_node = dom.find('img', class_='gravatar')
-        if avartar_node is not None:
-            data['avatarUrl'] = self.get_link(avartar_node.get('src'))
+        avatar_node = dom.find('img', class_='gravatar')
+        if avatar_node is not None:
+            data['avatarUrl'] = self.get_link(avatar_node.get('src'))
+            if 'username' not in user:
+                data['username'] = avatar_node.get('title')
 
         # Karma
         score_node = dom.find('div', class_='scoreNumber')
@@ -590,6 +615,16 @@ class Api:
             if comments_node is not None:
                 data['comments'] = self.parse_comment(comments_node)
 
+            data['has_more_comments'] = False
+            add_comment_node = dom.find(id='add-comment-to-post-' + str(int(params['id'])))
+            if add_comment_node:
+                add_comment_script = add_comment_node.find_next('script')
+                if add_comment_script:
+                    more_comment_pattern = re.compile('\[\'comments-for-question-(\d+)\'\][ =]+{[\n ]*truncated[ :]+(true|false)')
+                    more_comment_result = more_comment_pattern.search(add_comment_script.get_text())
+                    if more_comment_result:
+                        data['has_more_comments'] = True if more_comment_result.group(2) == 'true' else False
+
             # Parse CSRF token
             csrf_node = dom.find('input', attrs={'name': 'csrfmiddlewaretoken'})
             if csrf_node:
@@ -597,18 +632,18 @@ class Api:
                 self.csrfToken = csrf_node.get('value')
 
         # Parse question paging
-        data['has_pages'] = 0
+        data['has_more_answers'] = False
         paging_node = dom.find('div', class_='paginator')
         if paging_node is not None:
             current_page_node = paging_node.find('span', class_='curr')
             if current_page_node is not None:
-                data['page'] = current_page_node.get_text().strip()
+                data['page'] = int(current_page_node.get_text().strip())
             else:
                 data['page'] = 1
 
             next_page_node = paging_node.find('span', class_='next')
             if next_page_node is not None:
-                data['has_pages'] = 1
+                data['has_more_answers'] = True
 
         # Parse question's answers
         data['answers'] = self.parse_answer(dom)
@@ -716,6 +751,16 @@ class Api:
                 if answer_comments_node is not None:
                     item['comments'] = self.parse_comment(answer_comments_node)
 
+                item['has_more_comments'] = False
+                add_comment_node = answer_node.find(id='add-comment-to-post-' + item['id'])
+                if add_comment_node:
+                    add_comment_script = add_comment_node.find_next('script')
+                    if add_comment_script:
+                        more_comment_pattern = re.compile('\[\'comments-for-answer-(\d+)\'\][ =]+{[\n ]*truncated[ :]+(true|false)')
+                        more_comment_result = more_comment_pattern.search(add_comment_script.get_text())
+                        if more_comment_result:
+                            item['has_more_comments'] = True if more_comment_result.group(2) == 'true' else False
+
                 data.append(item)
 
         return data
@@ -799,8 +844,12 @@ class Api:
                         elif 'class' in p.attrs and 'age' in p['class']:
                             item['date'] = p.abbr['title']
                             item['date_ago'] = timeago.format(self._parse_datetime(item['date']), datetime.now(TIMEZONE))
-                        elif p.name == 'p' or p.name == 'del':
-                            item['content'] += self.parse_content(p)
+                        elif 'class' in p.attrs and 'edit' in p['class']:
+                            continue
+                        elif p.name == 'form':
+                            continue
+                        else:
+                            item['content'] += str(p)
 
                 data.append(item)
 
@@ -828,7 +877,7 @@ class Api:
                 item = {
                     'username': '',
                     'profile_url': '',
-                    'is_wiki': False,
+                    'is_wiki': False, 'is_anonymous': False,
                     'asked': False, 'answered': False, 'updated': False,
                     'date': '', "date_ago": '',
                     'avatar_url': '',
@@ -843,13 +892,13 @@ class Api:
                 elif raw_text.find('updated') != -1:
                     item['updated'] = True
 
+                date_node = post_node.find('abbr', class_='timeago')
+                if date_node is not None:
+                    item['date'] = date_node.get('title')
+                    item['date_ago'] = timeago.format(self._parse_datetime(item['date']), datetime.now(TIMEZONE))
+
                 card_node = post_node.find('div', class_='user-card')
                 if card_node is not None:
-                    date_node = post_node.find('abbr', class_='timeago')
-                    if date_node is not None:
-                        item['date'] = date_node.get('title')
-                        item['date_ago'] = timeago.format(self._parse_datetime(item['date']), datetime.now(TIMEZONE))
-
                     avatar_node = card_node.find('img', class_='gravatar')
                     if avatar_node is not None:
                         item['avatar_url'] = self.get_gravatar(avatar_node.get('src'), 100)
@@ -872,30 +921,26 @@ class Api:
                                 item['badge' + str(i)] = value
                                 item['has_badge'] = True
                 else:
-                    if item['updated']:
-                        date_node = post_node.find('abbr', class_='timeago')
-                        if date_node is not None:
-                            item['date'] = date_node.get('title')
-                            item['date_ago'] = timeago.format(self._parse_datetime(item['date']), datetime.now(TIMEZONE))
+                    anonymous_avatar_node = post_node.find('img', {'alt': 'anonymous user'})
+                    if anonymous_avatar_node:
+                        item['is_anonymous'] = True
+                        item['avatar_url'] = self.get_link(anonymous_avatar_node.get('src'))
 
+                    if item['updated']:
                         if idx == 1:
-                            item['username'] = data[0]['username']
-                            item['avatar_url'] = data[0]['avatar_url']
-                            item['profile_url'] = data[0]['profile_url']
-                            item['reputation'] = data[0]['reputation']
-                            item['has_badge'] = data[0]['has_badge']
-                            item['badge1'] = data[0]['badge1']
-                            item['badge2'] = data[0]['badge2']
-                            item['badge3'] = data[0]['badge3']
+                            item['username'] = data[0]['username'] if 'username' in data[0] else ''
+                            item['avatar_url'] = data[0]['avatar_url'] if 'avatar_url' in data[0] else ''
+                            item['profile_url'] = data[0]['profile_url'] if 'profile_url' in data[0] else ''
+                            item['reputation'] = data[0]['reputation'] if 'reputation' in data[0] else ''
+                            item['has_badge'] = data[0]['has_badge'] if 'has_badge' in data[0] else ''
+                            item['badge1'] = data[0]['badge1'] if 'badge1' in data[0] else ''
+                            item['badge2'] = data[0]['badge2'] if 'badge2' in data[0] else ''
+                            item['badge3'] = data[0]['badge3'] if 'badge3' in data[0] else ''
                     else:
                         wiki_img_node = post_node.find('img', alt='this post is marked as community wiki')
                         if wiki_img_node is not None:
                             item['is_wiki'] = True
                             item['avatar_url'] = self.get_link(wiki_img_node.get('src'))
-                            date_node = post_node.find('abbr', class_='timeago')
-                            if date_node is not None:
-                                item['date'] = date_node.get('title')
-                                item['date_ago'] = timeago.format(self._parse_datetime(item['date']), datetime.now(TIMEZONE))
 
                 data.append(item)
                 idx += 1
@@ -914,7 +959,7 @@ class Api:
 
         return new_params
 
-    def request(self, method, url, callback=None, params={}):
+    def request(self, method, url, callback=None, params={}, is_ajax=False):
         """
         Perform network request
         """
@@ -929,12 +974,16 @@ class Api:
             cookies = {}
             if self.sessionId:
                 cookies['sessionid'] = self.sessionId
+
+            headers = {}
             
             if method == 'GET':
-                response = requests.get(url, cookies=cookies, timeout=5)
+                if is_ajax:
+                    headers['x-requested-with'] = 'XMLHttpRequest'
+                response = requests.get(url, cookies=cookies, timeout=10, headers=headers)
             elif method == 'POST':
-                headers = {'x-requested-with': 'XMLHttpRequest'}
-                response = requests.post(url, data=params, cookies=cookies, timeout=5, headers=headers)
+                headers['x-requested-with'] = 'XMLHttpRequest'
+                response = requests.post(url, data=params, cookies=cookies, timeout=10, headers=headers)
             
             Utils.log('Response code: ' + str(response.status_code))
 
@@ -989,6 +1038,8 @@ class Api:
         item['added_at_label'] = timeago.format(datetime.fromtimestamp(int(q['added_at']), TIMEZONE), datetime.now(TIMEZONE))
         item['last_activity'] = q['last_activity_at']
         item['last_activity_label'] = timeago.format(datetime.fromtimestamp(int(q['last_activity_at']), TIMEZONE), datetime.now(TIMEZONE))
+        item['has_more_comments'] = False
+        item['has_more_answers'] = False
 
         item['tags'] = []
         for tag in q['tags']:

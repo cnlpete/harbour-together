@@ -49,6 +49,7 @@ Page {
             anchors.right: parent.right
 
             PageHeader {
+                id: pageHeader
                 title: user.username || ""
             }
 
@@ -127,7 +128,7 @@ Page {
         id: busy
         loading: root.loading
         hasError: root.hasError
-        text: qsTr("\uf007 %1").arg(user.username)
+        text: qsTr("\uf007 %1").arg(user.username || qsTr('Loading user...'))
         anchors.fill: parent
     }
 
@@ -150,13 +151,28 @@ Page {
                 py.call('app.api.set_logged_in_user', [rs])
             }
 
-            avartar.source = rs.avatarUrl
-            created.value = rs.created_label
-            last_seen.value = rs.last_seen_label
-            score.value = rs.reputation
-            question_section.count = rs.questions_count
-            for (var i=0; i<rs.questions.length; i++){
-                questionsModel.append(rs.questions[i])
+            if (rs.username){
+                pageHeader.title = rs.username
+            }
+            if (rs.avatarUrl){
+                avartar.source = rs.avatarUrl
+            }
+            if (rs.created_label){
+                created.value = rs.created_label
+            }
+            if (rs.last_seen_label){
+                last_seen.value = rs.last_seen_label
+            }
+            if (rs.reputation){
+                score.value = rs.reputation
+            }
+            if (rs.questions_count){
+                question_section.count = rs.questions_count
+            }
+            if (rs.questions && rs.questions.length){
+                for (var i=0; i<rs.questions.length; i++){
+                    questionsModel.append(rs.questions[i])
+                }
             }
         })
     }

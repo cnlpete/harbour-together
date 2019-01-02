@@ -5,7 +5,8 @@ Item {
     id: root
 
     property int padding: 0
-    property string label: ""
+    property alias text: label.text
+    property bool loading: false
 
     signal clicked()
 
@@ -21,10 +22,17 @@ Item {
             icon.source: "image://theme/icon-s-message?" + (mouse.pressed ? Theme.highlightColor : Theme.primaryColor)
             height: parent.height
             width: Theme.iconSizeSmall
+            visible: !loading
+        }
+
+        BusyIndicator {
+            size: BusyIndicatorSize.Small
+            running: true
+            visible: loading
         }
 
         Label {
-            text: label
+            id: label
             color: mouse.pressed ? Theme.secondaryHighlightColor : Theme.secondaryColor
             font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeExtraSmall : Theme.fontSizeSmall
             width: parent.width
@@ -34,6 +42,6 @@ Item {
     MouseArea {
         id: mouse
         anchors.fill: parent
-        onClicked: root.clicked()
+        onClicked: loading ? {} : root.clicked()
     }
 }

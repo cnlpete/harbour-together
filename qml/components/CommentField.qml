@@ -31,7 +31,7 @@ Row {
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignBottom
         color: commentSendBtnMouse.pressed ? Theme.highlightColor : Theme.primaryColor
-        opacity: commentTextArea.text ? 1 : 0.3
+        opacity: commentTextArea.text.trim().length >= minLength ? 1 : 0.3
 
         BusyIndicator {
             id: busyIndicator
