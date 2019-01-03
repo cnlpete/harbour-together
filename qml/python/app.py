@@ -632,8 +632,62 @@ class Api:
             # Parse CSRF token
             csrf_node = dom.find('input', attrs={'name': 'csrfmiddlewaretoken'})
             if csrf_node:
-                Utils.log('CSRF: ' + csrf_node.get('value'))
+                #Utils.log('CSRF: ' + csrf_node.get('value'))
                 self.csrfToken = csrf_node.get('value')
+
+            # Parse followers
+            data['followers'] = 0
+            favorite_node = dom.find('div', attrs={'id': 'favorite-number'})
+            if favorite_node is not None:
+                favorite_text = favorite_node.get_text().strip()
+                favorite_pattern = re.compile('(\d+) follower[s]*')
+                favorite_result = favorite_pattern.search(favorite_text)
+                if favorite_result:
+                    data['followers'] = int(favorite_result.group(1))
+
+            # Parse following status
+            data['following'] = False
+            favorite_btn_node = dom.select_one('a.button.followed')
+            if favorite_btn_node is not None and favorite_btn_node.get('alt') == 'click to unfollow this question':
+                data['following'] = True
+
+            # Parse related questions
+            data['related'] = []
+            related_nodes = dom.find('div', class_='questions-related')
+            if related_nodes is not None:
+                for related_node in related_nodes.select('p'):
+                    a_node = related_node.find('a')
+                    item = {}
+                    item['title'] = a_node.get_text()
+                    item['url'] = self.get_link(a_node.get('href'))
+                    data['related'].append(item)
+
+            # Parse votes
+            data['votes'] = {}
+            for script in dom.select('script'):
+                script_text = script.get_text()
+                if not script_text:
+                    continue
+                if script_text.find('var votes = {};') != -1:
+                    for vote in re.findall('votes\[\'(\d+)\'\][ ]*=[ ]*([-1]+)', script_text):
+                        data['votes'][vote[0]] = int(vote[1])
+                    break
+
+            # Parse question status
+            status_node = dom.select_one('div.question-status')
+            if status_node:
+                data['status'] = {}
+                status_reason_node = status_node.select_one('b')
+                if status_reason_node:
+                    data['status']['reason'] = status_reason_node.get_text().strip('"')
+                status_author_node = status_node.select_one('a')
+                if status_author_node:
+                    data['status']['author'] = status_author_node.get_text()
+                    data['status']['profile_url'] = self.get_link(status_author_node.get('href'))
+                status_date_pattern = re.compile('close date (\d+-\d+-\d+ \d+:\d+:\d+)')
+                status_date_result = status_date_pattern.search(status_node.get_text())
+                if status_date_result:
+                    data['status']['date'] = status_date_result.group(1)
 
         # Parse question paging
         data['has_more_answers'] = False
@@ -651,44 +705,6 @@ class Api:
 
         # Parse question's answers
         data['answers'] = self.parse_answer(dom)
-
-        # Parse followers
-        data['followers'] = 0
-        favorite_node = dom.find('div', attrs={'id': 'favorite-number'})
-        if favorite_node is not None:
-            favorite_text = favorite_node.get_text().strip()
-            favorite_pattern = re.compile('(\d+) follower[s]*')
-            favorite_result = favorite_pattern.search(favorite_text)
-            if favorite_result:
-                data['followers'] = int(favorite_result.group(1))
-
-        # Parse following status
-        data['following'] = False
-        favorite_btn_node = dom.select_one('a.button.followed')
-        if favorite_btn_node is not None and favorite_btn_node.get('alt') == 'click to unfollow this question':
-            data['following'] = True
-
-        # Parse related questions
-        data['related'] = []
-        related_nodes = dom.find('div', class_='questions-related')
-        if related_nodes is not None:
-            for related_node in related_nodes.select('p'):
-                a_node = related_node.find('a')
-                item = {}
-                item['title'] = a_node.get_text()
-                item['url'] = self.get_link(a_node.get('href'))
-                data['related'].append(item)
-
-        # Parse votes
-        data['votes'] = {}
-        for script in dom.select('script'):
-            script_text = script.get_text()
-            if not script_text:
-                continue
-            if script_text.find('var votes = {};') != -1:
-                for vote in re.findall('votes\[\'(\d+)\'\][ ]*=[ ]*([-1]+)', script_text):
-                    data['votes'][vote[0]] = int(vote[1])
-                break
 
         return data
 
@@ -1033,7 +1049,7 @@ class Api:
 
         item = {}
         item['id'] = q['id']
-        item['title'] = q['title']
+        item['title'] = q['title'] + (' [answered]' if q['closed'] == True else '')
         item['body'] = q['text']
         item['author_id'] = q['author']['id']
         item['author'] = q['author']['username']
@@ -1050,6 +1066,8 @@ class Api:
         item['last_activity_label'] = timeago.format(datetime.fromtimestamp(int(q['last_activity_at']), TIMEZONE), datetime.now(TIMEZONE))
         item['has_more_comments'] = False
         item['has_more_answers'] = False
+        item['has_accepted_answer'] = q['has_accepted_answer']
+        item['closed'] = q['closed']
 
         item['tags'] = []
         for tag in q['tags']:

@@ -8,15 +8,12 @@ BackgroundItem {
 
     Column {
         id: column
-        height: titleLbl.height + row.height
-        width: parent.width
         spacing: Theme.paddingSmall
         anchors.left: parent.left
         anchors.leftMargin: Theme.horizontalPageMargin
         anchors.right: parent.right
         anchors.rightMargin: Theme.horizontalPageMargin
-        anchors.top: parent.top
-        anchors.topMargin: Theme.horizontalPageMargin
+        anchors.verticalCenter: parent.verticalCenter
 
         Label {
             // Question title

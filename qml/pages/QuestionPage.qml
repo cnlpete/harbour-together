@@ -205,6 +205,14 @@ Page {
                     width: parent.width
                     visible: !!usersModel.count
 
+                    QuestionStatus {
+                        id: questionStatus
+                        anchors.left: parent.left
+                        anchors.leftMargin: Theme.horizontalPageMargin
+                        anchors.right: parent.right
+                        anchors.rightMargin: Theme.horizontalPageMargin
+                    }
+
                     Hr {
                         width: parent.width
                     }
@@ -528,6 +536,10 @@ Page {
                 }
                 if (rs.votes){
                     votes = rs.votes
+                }
+                if (rs.status){
+                    question.status = rs.status
+                    questionStatus.model = rs.status
                 }
 
                 pageStack.pushAttached(Qt.resolvedUrl("QuestionExtrasPage.qml"), {question: question})
