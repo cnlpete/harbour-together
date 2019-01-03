@@ -17,9 +17,8 @@ Column {
     Label {
         text: qsTr('The question has been closed for the following reason: %1').arg(model.reason || '')
         width: parent.width
-        horizontalAlignment: Text.AlignHCenter
         font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeExtraSmall : Theme.fontSizeSmall
-        color: Theme.secondaryHighlightColor
+        color: Theme.secondaryColor
         wrapMode: Text.WordWrap
     }
 
@@ -31,14 +30,19 @@ Column {
             width: parent.width / 2
             font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeExtraSmall : Theme.fontSizeSmall
             color: Theme.secondaryHighlightColor
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: pageStack.push(Qt.resolvedUrl('../pages/UserPage.qml'), {user: {username: model.author, profile_url: model.profile_url}})
+            }
         }
 
         Label {
-            text: model.date || ''
+            text: model.date_ago || ''
             width: parent.width / 2
             horizontalAlignment: Text.AlignRight
             font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeExtraSmall : Theme.fontSizeSmall
-            color: Theme.secondaryHighlightColor
+            color: Theme.secondaryColor
         }
     }
 

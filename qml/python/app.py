@@ -688,6 +688,8 @@ class Api:
                 status_date_result = status_date_pattern.search(status_node.get_text())
                 if status_date_result:
                     data['status']['date'] = status_date_result.group(1)
+                    status_date = datetime.strptime(string, '%Y-%m-%d %H:%M:%S')
+                    data['status']['date_ago'] = timeago.format(self._parse_datetime(status_date_result.group(1)), datetime.now(TIMEZONE))
 
         # Parse question paging
         data['has_more_answers'] = False

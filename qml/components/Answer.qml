@@ -1,6 +1,5 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import "../js/utils.js" as Utils
 
 Item {
     property variant dataModel
@@ -116,7 +115,7 @@ Item {
                     wrapMode: Text.WordWrap
                     font.pixelSize: settings.fontSize === 1 ? Theme.fontSizeSmall : Theme.fontSizeMedium
                     width: parent.width
-                    onLinkActivated: Utils.handleLink(link)
+                    onLinkActivated: handleLink(link)
                 }
             }
         }

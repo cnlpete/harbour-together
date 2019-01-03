@@ -1,6 +1,5 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import "../js/utils.js" as Utils
 
 Label {
     anchors.left: parent.left
@@ -12,5 +11,5 @@ Label {
     linkColor: Theme.highlightColor
     font.pixelSize: Theme.fontSizeSmall
     wrapMode: Text.WordWrap
-    onLinkActivated: Utils.handleLink(link)
+    onLinkActivated: handleLink(link)
 }

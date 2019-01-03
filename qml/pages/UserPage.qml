@@ -1,7 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import "../components"
-import "../js/utils.js" as Utils
 
 Page {
     id: root
@@ -20,7 +19,7 @@ Page {
             MenuItem {
                 text: qsTr("View in browser")
                 onClicked: {
-                    Utils.handleLink(user.profile_url, true)
+                    handleLink(user.profile_url, true)
                 }
             }
 

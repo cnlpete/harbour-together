@@ -1,7 +1,6 @@
 import QtQuick 2.2
 import Sailfish.Silica 1.0
 import "../components"
-import "../js/utils.js" as Utils
 
 Page {
     allowedOrientations: Orientation.All
@@ -65,7 +64,7 @@ Page {
 
             Button {
                 text: 'Donate'
-                onClicked: Utils.handleLink('https://www.paypal.me/nvlong')
+                onClicked: handleLink('https://www.paypal.me/nvlong')
                 anchors.horizontalCenter: parent.horizontalCenter
             }
         }

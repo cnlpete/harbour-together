@@ -1,6 +1,5 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import "../js/utils.js" as Utils
 
 Item {
     id: root
@@ -60,7 +59,7 @@ Item {
             anchors.leftMargin: 0
             anchors.right: parent.right
             anchors.rightMargin: 0
-            onLinkActivated: Utils.handleLink(link)
+            onLinkActivated: handleLink(link)
         }
 
         Label {
