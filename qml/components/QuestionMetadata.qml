@@ -2,10 +2,11 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 
 Row {
+    id: root
+
     property string iconValue
     property string textValue
 
-    id: root
     height: iconElm.height
     spacing: Theme.paddingSmall
 
@@ -15,7 +16,7 @@ Row {
         font.family: iconFont.name
         text: iconValue
         anchors.verticalCenter: parent.verticalCenter
-        opacity: 0.5
+        opacity: 0.6
         color: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
     }
 

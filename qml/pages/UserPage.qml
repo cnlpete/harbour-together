@@ -141,12 +141,21 @@ Page {
         py.call('app.api.get_user', [user], function(rs){
             loading = false
 
+            if (!rs) return
+
             if (app.isLoggedIn && rs.current_user){
-                if (rs.current_user.reputation) app.reputation = rs.current_user.reputation
-                if (rs.current_user.badge1) app.badge1 = rs.current_user.badge1
-                if (rs.current_user.badge2) app.badge2 = rs.current_user.badge2
-                if (rs.current_user.badge3) app.badge3 = rs.current_user.badge3
-                py.call('app.api.set_logged_in_user', [rs.current_user])
+                var currentUser = rs.current_user
+
+                if (rs.avatarUrl && rs.username === currentUser.username){
+                    currentUser.avatarUrl = rs.avatarUrl
+                    app.avatarUrl = rs.avatarUrl
+                }
+                if (currentUser.reputation) app.reputation = currentUser.reputation
+                if (currentUser.badge1) app.badge1 = currentUser.badge1
+                if (currentUser.badge2) app.badge2 = currentUser.badge2
+                if (currentUser.badge3) app.badge3 = currentUser.badge3
+
+                py.call('app.api.set_logged_in_user', [currentUser])
             }
 
             if (rs.username){

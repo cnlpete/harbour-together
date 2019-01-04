@@ -77,74 +77,6 @@ Page {
                     height: Theme.paddingMedium
                 }
 
-                Row {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    visible: !!question.body
-
-                    VoteUpButton {
-                        id: voteUpBtn
-                        width: Theme.iconSizeMedium
-                        voted: votes[question.id] === 1
-                        onClicked: {
-                            if (loading) return
-                            loading = true
-
-                            py.call('app.api.do_vote', [question.id, 1], function(rs){
-                                loading = false
-
-                                if (rs && rs.success === 1){
-                                    voteLabel.text = rs.count
-                                    question.score = rs.count
-                                    voted = !rs.status
-                                }
-                            })
-                        }
-                    }
-
-                    Label {
-                        id: voteLabel
-                        text: loading ? '' : (question.score || '0')
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        width: (loading ? voteBusy.width : implicitWidth) + 2 * Theme.paddingMedium
-                        height: parent.height
-
-                        BusyIndicator {
-                            id: voteBusy
-                            size: BusyIndicatorSize.Small
-                            anchors.verticalCenter: parent.verticalCenter
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            running: loading
-                        }
-                    }
-
-                    VoteDownButton {
-                        id: voteDownBtn
-                        width: Theme.iconSizeMedium
-                        voted: votes[question.id] === -1
-                        onClicked: {
-                            if (loading) return
-                            loading = true
-
-                            py.call('app.api.do_vote', [question.id, 2], function(rs){
-                                loading = false
-
-                                if (rs && rs.success === 1){
-                                    voteLabel.text = rs.count
-                                    question.score = rs.count
-                                    voted = !rs.status
-                                }
-                            })
-                        }
-                    }
-                }
-
-                Item {
-                    // separator
-                    width: parent.width
-                    height: Theme.paddingMedium
-                }
-
                 Label {
                     text: question.body || ""
                     color: Theme.primaryColor
@@ -203,6 +135,70 @@ Page {
                 Column {
                     width: parent.width
                     visible: !!usersModel.count
+
+                    Hr {
+                        width: parent.width
+                        paddingBottom: Theme.paddingMedium
+                    }
+
+                    Row {
+                        anchors.horizontalCenter: parent.horizontalCenter
+
+                        VoteUpButton {
+                            id: voteUpBtn
+                            width: Theme.iconSizeMedium
+                            voted: votes[question.id] === 1
+                            onClicked: {
+                                if (loading) return
+                                loading = true
+
+                                py.call('app.api.do_vote', [question.id, 1], function(rs){
+                                    loading = false
+
+                                    if (rs && rs.success === 1){
+                                        voteLabel.text = rs.count
+                                        question.score = rs.count
+                                        voted = !rs.status
+                                    }
+                                })
+                            }
+                        }
+
+                        Label {
+                            id: voteLabel
+                            text: question.score || '0'
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            width: implicitWidth + 2 * Theme.paddingMedium
+                            height: parent.height
+                        }
+
+                        VoteDownButton {
+                            id: voteDownBtn
+                            width: Theme.iconSizeMedium
+                            voted: votes[question.id] === -1
+                            onClicked: {
+                                if (loading) return
+                                loading = true
+
+                                py.call('app.api.do_vote', [question.id, 2], function(rs){
+                                    loading = false
+
+                                    if (rs && rs.success === 1){
+                                        voteLabel.text = rs.count
+                                        question.score = rs.count
+                                        voted = !rs.status
+                                    }
+                                })
+                            }
+                        }
+                    }
+
+                    Item {
+                        // separator
+                        width: parent.width
+                        height: Theme.paddingMedium
+                    }
 
                     QuestionStatus {
                         id: questionStatus

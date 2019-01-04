@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import "../components"
+import "../js/utils.js" as Utils
 
 BackgroundItem {
     id: delegate
@@ -18,7 +19,7 @@ BackgroundItem {
         Label {
             // Question title
             id: titleLbl
-            text: title
+            text: Utils.processQuestionTitle(title)
             width: parent.width
             color: delegate.highlighted ? Theme.highlightColor : Theme.primaryColor
             wrapMode: Text.WordWrap

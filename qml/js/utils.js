@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018 Nguyen Long.
+ * Copyright (C) 2018-2019 Nguyen Long.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,39 +21,9 @@
  * THE SOFTWARE.
  */
 
-//.pragma library
+.pragma library
 
 var BASE_URL = 'https://together.jolla.com'
-
-function handleLink(link, forceExternal) {
-    if (!link){
-        console.log('Link is empty')
-        return
-    }
-
-    link = processLink(link)
-
-    if (!forceExternal){
-        if (link.indexOf("together.jolla.com/question/") > -1){
-            console.log("Internal link: " + link)
-            var questionId = parseQuestionId(link)
-            if (questionId){
-                pageStack.push(Qt.resolvedUrl("../pages/QuestionPage.qml"), {question: {id: questionId}})
-            }else{
-                console.log("Could not found question ID")
-            }
-        }else if (link.indexOf("together.jolla.com/users/") > -1){
-            console.log("Internal link: " + link)
-            pageStack.push(Qt.resolvedUrl("../pages/UserPage.qml"), {user: {profile_url: link}})
-        }else{
-            console.log("External link: " + link)
-            Qt.openUrlExternally(link)
-        }
-    }else{
-        console.log("External link: " + link)
-        Qt.openUrlExternally(link)
-    }
-}
 
 function parseQuestionId(url){
     var regex = /together.jolla.com\/question\/(\d+)\//
@@ -73,4 +43,14 @@ function processLink(link){
     }else{
         return link
     }
+}
+
+function processQuestionTitle(title){
+    var regex = /\[(duplicate|not relevant|answered|released)\]$/
+    var matches = regex.exec(title)
+    if (matches){
+        return '\uf14a ' + title
+    }
+
+    return title
 }

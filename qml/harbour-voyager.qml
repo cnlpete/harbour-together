@@ -5,13 +5,14 @@ import Nemo.Notifications 1.0
 import lbee.together.core 1.0
 import "pages"
 import "components"
+import "js/utils.js" as Utils
 
 ApplicationWindow {
     id: app
 
-    property string baseUrl: 'https://together.jolla.com'
     property bool loading: false
     property bool isLoggedIn: false
+    property int userId: 0
     property string username: ''
     property string profileUrl: ''
     property string avatarUrl: ''
@@ -62,11 +63,11 @@ ApplicationWindow {
 
             importModule('app', function(){
                 py.call('app.api.get_logged_in_user', [], function(rs){
-                    if (rs){
+                    if (rs && rs.id && rs.username && rs.profileUrl){
                         app.isLoggedIn = true
                         app.username = rs.username
                         app.profileUrl = rs.profileUrl
-                        app.avatarUrl = rs.avatarUrl
+                        if (rs.avatarUrl) app.avatarUrl = rs.avatarUrl
                         if (rs.reputation) app.reputation = rs.reputation
                         if (rs.badge1) app.badge1 = rs.badge1
                         if (rs.badge2) app.badge2 = rs.badge2
@@ -83,12 +84,12 @@ ApplicationWindow {
             return
         }
 
-        link = processLink(link)
+        link = Utils.processLink(link)
 
         if (!forceExternal){
             if (link.indexOf("together.jolla.com/question/") > -1){
                 console.log("Internal link: " + link)
-                var questionId = parseQuestionId(link)
+                var questionId = Utils.parseQuestionId(link)
                 if (questionId){
                     pageStack.push(Qt.resolvedUrl("pages/QuestionPage.qml"), {question: {id: questionId}})
                 }else{
@@ -104,26 +105,6 @@ ApplicationWindow {
         }else{
             console.log("External link: " + link)
             Qt.openUrlExternally(link)
-        }
-    }
-
-    function parseQuestionId(url){
-        var regex = /together.jolla.com\/question\/(\d+)\//
-        var matches = regex.exec(url)
-        if (matches[1]){
-            return matches[1]
-        }
-    }
-
-    function processLink(link){
-        if (link.indexOf('http') === 0){
-            return link
-        }else if (link.indexOf('//') === 0){
-            return 'http:' + link
-        }else if (link.indexOf('/') === 0){
-            return baseUrl + link
-        }else{
-            return link
         }
     }
 }

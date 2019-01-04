@@ -1,5 +1,5 @@
 """
-Copyright (C) 2018 Nguyen Long.
+Copyright (C) 2018-2019 Nguyen Long.
 All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -39,8 +39,13 @@ from diskcache import Cache
 
 BASE_URL = 'https://together.jolla.com/'
 TIMEZONE = timezone(timedelta(hours=2), 'Europe/Helsinki')
-COOKIE_PATH = '/home/nemo/.local/share/harbour-voyager/harbour-voyager/.QtWebKit/cookies.db'
-CACHE_PATH = '/home/nemo/.local/share/harbour-voyager/harbour-voyager/cache/'
+HARBOUR_APP_NAME = 'harbour-voyager'
+HOME = os.path.expanduser('~')
+XDG_DATA_HOME = os.environ.get('XDG_DATA_HOME', os.path.join(HOME, '.local', 'share'))
+XDG_CONFIG_HOME = os.environ.get('XDG_CONFIG_HOME', os.path.join(HOME, '.config'))
+XDG_CACHE_HOME = os.path.join('XDG_CACHE_HOME', os.path.join(HOME, '.cache'))
+COOKIE_PATH = os.path.join(XDG_DATA_HOME, HARBOUR_APP_NAME, HARBOUR_APP_NAME, '.QtWebKit', 'cookies.db')
+CACHE_PATH = os.path.join(XDG_CACHE_HOME, HARBOUR_APP_NAME, HARBOUR_APP_NAME)
 
 class Api:
     def __init__(self):
@@ -441,7 +446,7 @@ class Api:
 
     def _parse_logged_in_user(self, node):
         """
-        Parse user info from html in page header
+        Parse logged in user info from page header
         """
 
         user_node = node.select_one('div#userToolsNav')
@@ -465,14 +470,24 @@ class Api:
 
         reputation_node = user_node.select_one('a.reputation')
         if reputation_node:
-            data['reputation'] = int(reputation_node.get_text().strip().replace('karma: ', ''))
+            data['reputation'] = self._to_int(reputation_node.get_text().strip().replace('karma: ', ''))
 
         for i in range(1, 4):
             badge = user_stats.select_one('span.badge' + str(i))
             if badge:
-                data['badge' + str(i)] = int(badge.find_next_sibling('span', class_='badgecount').get_text())
+                data['badge' + str(i)] = self._to_int(badge.find_next_sibling('span', class_='badgecount').get_text())
 
         return data
+
+    def _to_int(self, string):
+        """
+        Convert string number to int. Ex: 1,000 => 1000
+        """
+
+        if not string:
+            return 0
+
+        return int(string.replace(',', ''))
 
     def _parse_user_page(self, html, user):
         """
@@ -490,8 +505,7 @@ class Api:
         avatar_node = dom.find('img', class_='gravatar')
         if avatar_node is not None:
             data['avatarUrl'] = self.get_link(avatar_node.get('src'))
-            if 'username' not in user:
-                data['username'] = avatar_node.get('title')
+            data['username'] = avatar_node.get('title')
 
         # Karma
         score_node = dom.find('div', class_='scoreNumber')
@@ -688,8 +702,8 @@ class Api:
                 status_date_result = status_date_pattern.search(status_node.get_text())
                 if status_date_result:
                     data['status']['date'] = status_date_result.group(1)
-                    status_date = datetime.strptime(string, '%Y-%m-%d %H:%M:%S')
-                    data['status']['date_ago'] = timeago.format(self._parse_datetime(status_date_result.group(1)), datetime.now(TIMEZONE))
+                    status_date = datetime.strptime(data['status']['date'], '%Y-%m-%d %H:%M:%S')
+                    data['status']['date_ago'] = timeago.format(status_date, datetime.utcnow())
 
         # Parse question paging
         data['has_more_answers'] = False

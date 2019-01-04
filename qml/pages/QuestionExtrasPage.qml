@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import "../components"
+import "../js/utils.js" as Utils
 
 Page {
     id: root
@@ -152,7 +153,7 @@ Page {
 
                     Label {
                         id: questionTitle
-                        text: title
+                        text: Utils.processQuestionTitle(title)
                         anchors.left: parent.left
                         anchors.right: parent.right
                         anchors.leftMargin: Theme.horizontalPageMargin
