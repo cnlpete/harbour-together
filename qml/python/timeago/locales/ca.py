@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
 Created on 2017-8-30
@@ -21,4 +20,3 @@ LOCALE = [
     ["fa 1 any", "d'aquí 1 any"],
     ["fa %s anys", "d'aquí %s anys"]
 ]
-        
