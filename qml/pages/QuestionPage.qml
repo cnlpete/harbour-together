@@ -12,6 +12,7 @@ Page {
     property var votes: ({})
     property bool hasMoreComments: false
     property bool hasMoreAnswers: false
+    property bool questionClosed: false
 
     allowedOrientations: Orientation.All
 
@@ -402,6 +403,7 @@ Page {
                         width: parent.width
                         padding: Theme.horizontalPageMargin
                         text: app.isLoggedIn ? qsTr("Add answer") : qsTr("Login/Signup to answer")
+                        visible: !questionClosed
                         onClicked: {
                             if (app.isLoggedIn){
                                 visible = false
@@ -497,6 +499,8 @@ Page {
                 pushUpMenu.busy = false
                 loading = false
 
+                if (!rs) return
+
                 if (rs.followers){
                     question.followers = rs.followers
                 }
@@ -535,6 +539,7 @@ Page {
                 if (rs.status){
                     question.status = rs.status
                     questionStatus.model = rs.status
+                    questionClosed = true
                 }
 
                 pageStack.pushAttached(Qt.resolvedUrl("QuestionExtrasPage.qml"), {question: question})

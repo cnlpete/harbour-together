@@ -19,7 +19,7 @@ BackgroundItem {
         Label {
             // Question title
             id: titleLbl
-            text: Utils.processQuestionTitle(title)
+            text: Utils.processQuestionTitle(typeof closed !== 'undefined' && closed ? '\uf14a ' + title : title)
             width: parent.width
             color: delegate.highlighted ? Theme.highlightColor : Theme.primaryColor
             wrapMode: Text.WordWrap
@@ -29,7 +29,6 @@ BackgroundItem {
         Row {
             id: row
             width: parent.width
-            //height: authorIcon.height
             spacing: Theme.paddingSmall
 
             QuestionMetadata {

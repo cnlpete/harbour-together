@@ -1065,7 +1065,7 @@ class Api:
 
         item = {}
         item['id'] = q['id']
-        item['title'] = q['title'] + (' [answered]' if q['closed'] == True else '')
+        item['title'] = q['title']
         item['body'] = q['text']
         item['author_id'] = q['author']['id']
         item['author'] = q['author']['username']
