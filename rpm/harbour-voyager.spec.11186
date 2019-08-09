@@ -71,3 +71,16 @@ desktop-file-install --delete-original       \
 %{_datadir}/icons/hicolor/*/apps/%{name}.png
 # >> files
 # << files
+%changelog
+* Fri Aug 09 2019 Michal Kosciesza <michal@mkiol.net> 0.1.1-2
+- Bug fixes discovered on Sailfish OS 3.1.0
+
+* Fri Jan 4 2019 Nguyen Long <nvlong2203@gmail.com> 0.1.1-1
+- Added load more comments button
+- Added question status
+- UI improvement
+- Bug fixes
+- Harbour release
+
+* Tue Dec 18 2018 Nguyen Long <nvlong2203@gmail.com> 0.1.0-1
+- Initial release

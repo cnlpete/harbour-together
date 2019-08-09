@@ -15,7 +15,6 @@ Row {
         id: commentTextArea
         placeholderText: qsTr('Add answer')
         label: text.trim().length < minLength ? qsTr('Enter at least %n more characters', '', minLength - text.trim().length) : ''
-        _labelItem.font.pixelSize: Theme.fontSizeExtraSmall
         width: parent.width - commentSendBtn.width
         textWidth: width
         textMargin: 0
