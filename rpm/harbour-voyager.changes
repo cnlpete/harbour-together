@@ -1,3 +1,6 @@
+* Fri Dec 13 2019 Michal Kosciesza <michal@mkiol.net> 0.1.1-3
+- Missing python3-setuptools dependency added (bug fixes discovered on Sailfish OS 3.2.1)
+
 * Fri Aug 09 2019 Michal Kosciesza <michal@mkiol.net> 0.1.1-2
 - Bug fixes discovered on Sailfish OS 3.1.0
 
